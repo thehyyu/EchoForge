@@ -517,7 +517,7 @@ graph TD
 ## 當前狀態
 
 **最後更新：** 2026-03-27
-**目前進度：** Branch 0 完成，準備進入 Branch 0.5
+**目前進度：** Branch 0.5 完成，曳光彈走通
 
 ### 已完成
 - Branch 0：環境就緒確認（全部通過）
@@ -526,13 +526,27 @@ graph TD
   - Qwen2.5 14B 已安裝於 Ollama
   - mlx-whisper 已安裝於專案 .venv
   - 翻譯改用 Qwen2.5 14B，translategemma 不需另外安裝
+- Branch 0.5：曳光彈完整走通
+  - Next.js 16 專案初始化於 `web/` 子資料夾
+  - Neon Postgres 連線（`web/lib/db.ts`）
+  - posts / jobs 資料表 migration 完成
+  - 音檔上傳 API（PUT streaming，繞過 body size 限制）
+  - Mac mini poll script（`pipeline/poll.py`）
+  - Whisper large-v3-mlx 轉逐字稿（模型已下載至本機快取）
+  - Qwen2.5 14B 潤飾 + 分類 + 關鍵字
+  - 後台草稿列表 + 發佈功能（`/admin/posts`）
+  - 前台文章頁（`/zh/posts/[slug]`）
 
 ### 進行中
 （無）
 
 ### 遇到的挑戰
 - Mac mini 與開發機為同一台，無需分開考慮環境
-- requirements.txt 已存在且包含所有 Mac mini 所需套件，直接 pip install -r 即可
+- Vercel Blob store 需設為 public，private store 不支援 public blob
+- Next.js App Router 大檔案上傳需用 PUT streaming，不能用 formData
+- `@vercel/blob` v2.3.1 無 `handleUpload`，改用直接 streaming 方式
+- Whisper 模型（3GB）第一次執行需下載，之後快取
 
 ### 下一步
-進入 Branch 0.5 曳光彈：走通「上傳音檔 → Whisper 轉文字 → Qwen2.5 潤飾 → 後台出現草稿 → 手動發佈 → 前台可見」的最小路徑。
+進入 Branch 1（測試環境）或直接 Branch 2（基礎建設完整化）。
+曳光彈已驗證核心路徑可行，可展開正式開發。
