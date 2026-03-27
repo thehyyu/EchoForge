@@ -516,17 +516,23 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** —
-**目前進度：** 尚未開始
+**最後更新：** 2026-03-27
+**目前進度：** Branch 0 完成，準備進入 Branch 0.5
 
 ### 已完成
-（無）
+- Branch 0：環境就緒確認（全部通過）
+  - fnm、pyenv、Vercel 帳號、Neon connection string、Google OAuth Client ID 均已設定
+  - GitHub repo 已建立（thehyyu/my-first-ai-project）
+  - Qwen2.5 14B 已安裝於 Ollama
+  - mlx-whisper 已安裝於專案 .venv
+  - 翻譯改用 Qwen2.5 14B，translategemma 不需另外安裝
 
 ### 進行中
 （無）
 
 ### 遇到的挑戰
-（無）
+- Mac mini 與開發機為同一台，無需分開考慮環境
+- requirements.txt 已存在且包含所有 Mac mini 所需套件，直接 pip install -r 即可
 
 ### 下一步
-從 Branch 0 曳光彈開始：完成環境建置後，走通「上傳音檔 → 草稿出現 → 前台可見」的最小路徑。
+進入 Branch 0.5 曳光彈：走通「上傳音檔 → Whisper 轉文字 → Qwen2.5 潤飾 → 後台出現草稿 → 手動發佈 → 前台可見」的最小路徑。
