@@ -12,7 +12,7 @@ export default async function AdminJobsPage() {
   `
 
   return (
-    <main className="max-w-3xl mx-auto mt-16 p-8">
+    <main className="w-full max-w-screen-xl mx-auto mt-16 px-8">
       <h1 className="text-2xl font-bold mb-8">待審核逐字稿</h1>
       {jobs.length === 0 ? (
         <p className="text-gray-500">目前沒有待審核的逐字稿。</p>

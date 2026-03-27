@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { sql } from '@/lib/db'
 import PublishButton from './PublishButton'
 
@@ -21,7 +22,9 @@ export default async function AdminPostsPage() {
             <li key={post.id} className="border rounded p-4 space-y-2">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-lg font-medium">{post.title_zh}</p>
+                  <Link href={`/admin/posts/${post.id}`} className="text-lg font-medium hover:underline">
+                    {post.title_zh}
+                  </Link>
                   <p className="text-base text-gray-500 mt-1">
                     {post.category} ·{' '}
                     {(post.tags as string[]).join('、')} ·{' '}
