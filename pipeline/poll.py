@@ -1,7 +1,5 @@
 import os
 import time
-import json
-import hashlib
 import requests
 import psycopg
 import mlx_whisper
@@ -44,63 +42,26 @@ def transcribe(audio_path):
     return result['text'].strip()
 
 
-def polish_with_qwen(transcript):
-    prompt = f"""你是一個部落格文章編輯。以下是語音轉文字的逐字稿，請整理成完整的中文部落格文章。
 
-只回傳 JSON，格式如下，不要有其他文字：
-{{
-  "title_zh": "文章標題",
-  "content_zh": "文章內文（Markdown 格式）",
-  "category": "work 或 technology 或 life 或 sadhaka 其中之一",
-  "tags": ["關鍵字1", "關鍵字2", "關鍵字3"]
-}}
-
-逐字稿：
-{transcript}"""
-
-    response = requests.post(OLLAMA_URL, json={
-        'model': 'qwen2.5:14b',
-        'prompt': prompt,
-        'stream': False
-    })
-    response.raise_for_status()
-
-    text = response.json()['response']
-    start = text.find('{')
-    end = text.rfind('}') + 1
-    return json.loads(text[start:end])
+def set_job_transcribed(job_id, transcript):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE jobs SET status = 'transcribed', transcript = %s WHERE id = %s
+            """, (transcript, job_id))
+            conn.commit()
 
 
-def make_slug(title):
-    return hashlib.md5(title.encode()).hexdigest()[:8]
+def set_job_error(job_id, error_message):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE jobs SET status = 'error', error_message = %s WHERE id = %s
+            """, (error_message, job_id))
+            conn.commit()
 
 
-def create_post_and_finish(conn, job_id, transcript, data):
-    slug = make_slug(data['title_zh'])
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO posts (title_zh, content_zh, category, tags, status, slug)
-            VALUES (%s, %s, %s, %s, 'draft', %s)
-            RETURNING id
-        """, (
-            data['title_zh'],
-            data['content_zh'],
-            data['category'],
-            data['tags'],
-            slug
-        ))
-        post_id = cur.fetchone()[0]
-
-        cur.execute("""
-            UPDATE jobs SET status = 'done', transcript = %s, post_id = %s
-            WHERE id = %s
-        """, (transcript, post_id, job_id))
-
-        conn.commit()
-    return post_id
-
-
-def process_job(conn, job):
+def process_job(job):
     job_id, job_type, source_url = job
     print(f'[Job {job_id}] 開始處理，type={job_type}')
 
@@ -112,33 +73,25 @@ def process_job(conn, job):
         transcript = transcribe(audio_path)
         print(f'[Job {job_id}] 逐字稿：{transcript[:80]}...')
 
-        print(f'[Job {job_id}] Qwen2.5 潤飾...')
-        data = polish_with_qwen(transcript)
-        print(f'[Job {job_id}] 標題：{data["title_zh"]}')
-
-        post_id = create_post_and_finish(conn, job_id, transcript, data)
-        print(f'[Job {job_id}] 完成，草稿 post_id={post_id}')
+        set_job_transcribed(job_id, transcript)
+        print(f'[Job {job_id}] 轉錄完成，等待人工確認。')
 
     except Exception as e:
         print(f'[Job {job_id}] 錯誤：{e}')
-        with conn.cursor() as cur:
-            cur.execute("""
-                UPDATE jobs SET status = 'error', error_message = %s WHERE id = %s
-            """, (str(e), job_id))
-            conn.commit()
+        set_job_error(job_id, str(e))
 
 
 def main():
     print('Poll script 啟動')
-    conn = psycopg.connect(DATABASE_URL)
 
     while True:
-        job = get_pending_job(conn)
+        with psycopg.connect(DATABASE_URL) as conn:
+            job = get_pending_job(conn)
         if job:
-            process_job(conn, job)
+            process_job(job)
         else:
             print('沒有待處理任務，等待 30 秒...')
-            time.sleep(30)
+        time.sleep(30)
 
 
 if __name__ == '__main__':

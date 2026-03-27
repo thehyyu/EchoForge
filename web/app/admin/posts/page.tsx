@@ -27,6 +27,15 @@ export default async function AdminPostsPage() {
                     {(post.tags as string[]).join('、')} ·{' '}
                     {new Date(post.created_at as string).toLocaleDateString('zh-TW')}
                   </p>
+                  {post.status === 'published' && (
+                    <a
+                      href={`/zh/posts/${post.slug}`}
+                      target="_blank"
+                      className="text-sm text-blue-500 hover:underline"
+                    >
+                      查看文章 →
+                    </a>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className={`text-sm px-2 py-1 rounded ${
