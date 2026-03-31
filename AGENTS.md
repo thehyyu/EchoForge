@@ -201,7 +201,10 @@ graph TD
 - [ ] `npm test` 執行不報錯
 - [ ] 可成功渲染一個簡單元件並通過測試
 
-### 1.2 Playwright E2E
+### 1.2 Playwright E2E（Optional，延至 Branch 6 評估）
+
+> **決策：** 遵守 KISS 原則，個人部落格初期不需要重量級 E2E。
+> Chromium 約 400MB，ROI 偏低。Branch 6 上線前再評估是否補上。
 
 **Input:** 已初始化的 Next.js 專案、本地可啟動的 dev server
 **Output:** playwright.config.ts、tests/ 資料夾
