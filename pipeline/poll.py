@@ -2,7 +2,6 @@ import os
 import time
 import requests
 import psycopg
-import mlx_whisper
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,6 +34,7 @@ def download_audio(url, job_id):
 
 
 def transcribe(audio_path):
+    import mlx_whisper
     result = mlx_whisper.transcribe(
         audio_path,
         path_or_hf_repo='mlx-community/whisper-large-v3-mlx'
