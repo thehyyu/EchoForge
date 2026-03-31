@@ -11,6 +11,15 @@ export default async function HomePage() {
     ORDER BY created_at DESC
   `
 
+  // 聚合所有標籤並計算出現次數
+  const tagCount: Record<string, number> = {}
+  for (const post of posts) {
+    for (const tag of (post.tags as string[])) {
+      tagCount[tag] = (tagCount[tag] || 0) + 1
+    }
+  }
+  const tags = Object.entries(tagCount).sort((a, b) => b[1] - a[1])
+
   return (
     <main className="max-w-2xl mx-auto px-6 py-16">
       <div className="flex items-baseline justify-between mb-10">
@@ -49,14 +58,36 @@ export default async function HomePage() {
               </Link>
               <div className="flex gap-1 mt-2 flex-wrap">
                 {(post.tags as string[]).map((tag) => (
-                  <span key={tag} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                  <Link
+                    key={tag}
+                    href={`/tag/${encodeURIComponent(tag)}`}
+                    className="text-xs bg-gray-100 text-gray-500 hover:bg-gray-200 px-2 py-0.5 rounded"
+                  >
                     {tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {tags.length > 0 && (
+        <div className="mt-16 pt-8 border-t">
+          <p className="text-xs text-gray-400 mb-3">標籤</p>
+          <div className="flex flex-wrap gap-2">
+            {tags.map(([tag, count]) => (
+              <Link
+                key={tag}
+                href={`/tag/${encodeURIComponent(tag)}`}
+                className="text-xs bg-gray-100 text-gray-500 hover:bg-gray-200 px-2 py-1 rounded"
+              >
+                {tag}
+                {count > 1 && <span className="ml-1 text-gray-400">{count}</span>}
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
     </main>
   )
