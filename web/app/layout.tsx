@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import NavRss from "./NavRss";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +44,7 @@ export default function RootLayout({
           </Link>
           <div className="flex items-center gap-4 text-sm text-gray-400">
             <Link href="/search" className="hover:text-gray-700">搜尋</Link>
-            <a href="/feed/zh.xml" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700">RSS</a>
+            <NavRss />
           </div>
         </nav>
         {children}
