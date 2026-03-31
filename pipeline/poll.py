@@ -43,22 +43,26 @@ def transcribe(audio_path):
 
 
 def scrape_gemini(url):
-    from bs4 import BeautifulSoup
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
-    response = requests.get(url, headers=headers, timeout=15)
-    response.raise_for_status()
+    import time
+    from selenium import webdriver
+    from selenium.webdriver.safari.options import Options
+    from selenium.webdriver.common.by import By
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    options = Options()
+    driver = webdriver.Safari(options=options)
+    try:
+        driver.get(url)
+        time.sleep(10)  # 等待 SPA 完整渲染
 
-    # 移除 script / style
-    for tag in soup(['script', 'style', 'nav', 'footer']):
-        tag.decompose()
+        # 用 JS 取得整個 body 的 innerText，過濾掉 script/style
+        text = driver.execute_script("""
+            var scripts = document.querySelectorAll('script, style, nav, header, footer');
+            scripts.forEach(function(el){ el.remove(); });
+            return document.body.innerText;
+        """) or ''
+    finally:
+        driver.quit()
 
-    # 嘗試抓主要對話區塊
-    main = soup.find('main') or soup.find('article') or soup.body
-    text = main.get_text(separator='\n', strip=True) if main else soup.get_text(separator='\n', strip=True)
-
-    # 清理多餘空行
     lines = [l for l in text.splitlines() if l.strip()]
     return '\n'.join(lines)
 
