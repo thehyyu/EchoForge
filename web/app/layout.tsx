@@ -16,6 +16,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "thehyyu's blog",
   description: "聲音、想法、文字",
+  alternates: {
+    types: {
+      'application/rss+xml': [
+        { url: '/feed/zh.xml', title: 'thehyyu（中文）' },
+        { url: '/feed/en.xml', title: 'thehyyu (English)' },
+      ],
+    },
+  },
 };
 
 export default function RootLayout({
@@ -33,9 +41,10 @@ export default function RootLayout({
           <Link href="/" className="font-semibold text-gray-800 hover:opacity-70">
             thehyyu
           </Link>
-          <Link href="/search" className="text-sm text-gray-400 hover:text-gray-700">
-            搜尋
-          </Link>
+          <div className="flex items-center gap-4 text-sm text-gray-400">
+            <Link href="/search" className="hover:text-gray-700">搜尋</Link>
+            <a href="/feed/zh.xml" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700">RSS</a>
+          </div>
         </nav>
         {children}
       </body>
