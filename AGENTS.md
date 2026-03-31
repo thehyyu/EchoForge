@@ -524,38 +524,49 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-03-27
-**目前進度：** Branch 0.5 完成，pipeline 改為人工中繼流程
+**最後更新：** 2026-03-31
+**目前進度：** Branch 3、4、5 大部分完成，待 Branch 5.6、6
 
 ### 已完成
-- Branch 0：環境就緒確認（全部通過）
-  - fnm、pyenv、Vercel 帳號、Neon connection string、Google OAuth Client ID 均已設定
-  - GitHub repo 已建立（thehyyu/my-first-ai-project）
-  - Qwen2.5 14B 已安裝於 Ollama
-  - mlx-whisper 已安裝於專案 .venv
-  - 翻譯改用 Qwen2.5 14B，translategemma 不需另外安裝
+- Branch 0：環境就緒確認
 - Branch 0.5：曳光彈完整走通
-  - Next.js 16 專案初始化於 `web/` 子資料夾
-  - Neon Postgres 連線（`web/lib/db.ts`）
-  - posts / jobs 資料表 migration 完成
-  - 音檔上傳 API（PUT streaming，繞過 body size 限制）
-  - Mac mini poll script（`pipeline/poll.py`）
-  - Whisper large-v3-mlx 轉逐字稿（模型已下載至本機快取）
-  - Qwen2.5 14B 潤飾 + 分類 + 關鍵字
-  - 後台草稿列表 + 發佈功能（`/admin/posts`）
-  - 前台文章頁（`/zh/posts/[slug]`）
+- Branch 1.1 / 1.3 / 1.4：Jest / pytest / GitHub Actions CI
+- Branch 2.2–2.5：Neon DB、資料表 migration、Google OAuth（next-auth v5）
+- Branch 3.1：首頁文章列表
+- Branch 3.2：分類篩選頁 `/category/[slug]`
+- Branch 3.3：i18n 語言切換（`/zh/` 與 `/en/`，右上角切換連結）
+- Branch 3.4：全文搜尋（ILIKE，`/search`）
+- Branch 3.5：標籤篩選 `/tag/[slug]`、首頁底部文字雲
+- Branch 3.6：Markdown 渲染（react-markdown）、SEO generateMetadata、RSS feed（/feed/zh.xml、/feed/en.xml）
+- Branch 4.1：後台文章列表
+- Branch 4.2：草稿編輯器（中英分頁、Markdown 預覽、先預覽再存草稿流程）
+- Branch 4.3：發佈控制
+- Branch 4.4：語音上傳 + Gemini URL 輸入
+- Branch 4.5：任務狀態顯示
+- Branch 5.1：Poll 機制（FOR UPDATE SKIP LOCKED）
+- Branch 5.2：Whisper large-v3-mlx 轉逐字稿
+- Branch 5.3：Gemini share URL 爬取（Selenium + safaridriver，無需下載瀏覽器）
+- Branch 5.4：Qwen2.5 14B 潤飾 + 分類 + 關鍵字（人工點擊觸發，先預覽再存）
+- Branch 5.5：發佈時自動呼叫 Qwen2.5 翻譯英文版（背景非同步執行）
 
-### 進行中
-（無）
+### 重要技術決策
+- Next.js 16：`middleware.ts` 已改名為 `proxy.ts`，需注意
+- next-auth v5 beta：env var 名稱為 `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` / `AUTH_SECRET`
+- Gemini 爬取：requests 無法渲染 JS，改用 Selenium + safaridriver（macOS 預裝）
+- 翻譯：translategemma 棄用，直接用 Qwen2.5 14B 翻譯
+- 草稿生成流程：先預覽（不存 DB），滿意後才存為草稿
+- `turbopack.root` 須設定在 next.config.ts，避免多 lockfile 路徑偵測錯誤
 
 ### 遇到的挑戰
-- Mac mini 與開發機為同一台，無需分開考慮環境
-- Vercel Blob store 需設為 public，private store 不支援 public blob
-- Next.js App Router 大檔案上傳需用 PUT streaming，不能用 formData
-- `@vercel/blob` v2.3.1 無 `handleUpload`，改用直接 streaming 方式
-- Whisper 模型（3GB）第一次執行需下載，之後快取
+- Vercel Blob store 需設為 public
+- PUT streaming 繞過 Next.js body size 限制
+- Whisper 模型 3GB 首次需下載
+- Gemini share page 為 SPA，需 Selenium 等待渲染（sleep 10s）
+- React 19 + ts-jest 需 moduleNameMapper 指定 react 路徑
+- jest.config 需為 .js（CommonJS），不能用 .ts
 
 ### 下一步
-- 草稿編輯頁 `/admin/posts/[id]/edit`
-- 測試新版 pipeline 流程（上傳 → transcribed → 人工確認 → 產生草稿）
-- 之後進入 Branch 1（測試環境）或 Branch 2（基礎建設完整化）
+- Branch 5.6：error job 重試機制（後台加重試按鈕）
+- Branch 6.1：RWD 響應式
+- Branch 6.2：Giscus 留言（需先設定 GitHub Discussions）
+- Branch 6.3：部署 Vercel（env 設定、自訂域名）
