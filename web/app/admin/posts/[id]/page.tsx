@@ -12,7 +12,7 @@ export default async function EditPostPage({
   const { id } = await params
 
   const rows = await sql`
-    SELECT id, title_zh, content_zh, category, tags, status
+    SELECT id, title_zh, content_zh, title_en, content_en, category, tags, status
     FROM posts
     WHERE id = ${id}
   `
@@ -28,6 +28,8 @@ export default async function EditPostPage({
         postId={post.id as number}
         initialTitle={post.title_zh as string}
         initialContent={post.content_zh as string}
+        initialTitleEn={(post.title_en as string) || ''}
+        initialContentEn={(post.content_en as string) || ''}
         initialCategory={post.category as string}
         initialTags={(post.tags as string[]).join('、')}
         status={post.status as string}
