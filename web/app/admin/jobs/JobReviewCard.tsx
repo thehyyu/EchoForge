@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 
@@ -40,9 +40,34 @@ export default function JobReviewCard({
   const [saving, setSaving] = useState(false)
   const [draft, setDraft] = useState<Draft | null>(null)
   const [error, setError] = useState('')
+  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
 
+  function startPolling(genJobId: number) {
+    async function poll() {
+      try {
+        const res = await fetch(`/api/admin/jobs/${genJobId}/status`)
+        const data = await res.json()
+
+        if (data.status === 'done') {
+          setGenerating(false)
+          setDraft(data.result)
+        } else if (data.status === 'error') {
+          setGenerating(false)
+          setError(data.error_message || '產生失敗')
+        } else {
+          pollTimer.current = setTimeout(poll, 3000)
+        }
+      } catch {
+        setGenerating(false)
+        setError('無法取得產生結果')
+      }
+    }
+    poll()
+  }
+
   async function handlePreview() {
+    if (pollTimer.current) clearTimeout(pollTimer.current)
     setGenerating(true)
     setError('')
     setDraft(null)
@@ -58,13 +83,14 @@ export default function JobReviewCard({
     })
 
     const data = await res.json()
-    setGenerating(false)
 
-    if (res.ok) {
-      setDraft(data.draft)
-    } else {
+    if (!res.ok) {
+      setGenerating(false)
       setError(data.error || '產生失敗')
+      return
     }
+
+    startPolling(data.generateJobId)
   }
 
   async function handleSave() {
@@ -130,7 +156,7 @@ export default function JobReviewCard({
           disabled={generating}
           className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
         >
-          {generating ? '產生中...' : draft ? '重新產生' : '產生預覽'}
+          {generating ? '產生中（Mac mini 處理中...）' : draft ? '重新產生' : '產生預覽'}
         </button>
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
