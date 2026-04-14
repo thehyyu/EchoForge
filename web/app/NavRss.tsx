@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 
 export default function NavRss() {
   const pathname = usePathname()
-  const isEn = pathname.startsWith('/en/')
+  const isEn = pathname === '/en' || pathname.startsWith('/en/')
   const href = isEn ? '/feed/en.xml' : '/feed/zh.xml'
 
   return (

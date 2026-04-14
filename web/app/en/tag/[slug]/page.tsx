@@ -9,7 +9,7 @@ function formatDate(dateStr: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-export default async function TagPage({
+export default async function TagPageEn({
   params,
 }: {
   params: Promise<{ slug: string }>
@@ -18,9 +18,9 @@ export default async function TagPage({
   const tag = decodeURIComponent(slug)
 
   const posts = await sql`
-    SELECT slug, title_zh, category, tags, created_at
+    SELECT slug, title_en, title_zh, category, tags_en, created_at
     FROM posts
-    WHERE status = 'published' AND ${tag} = ANY(tags)
+    WHERE status = 'published' AND ${tag} = ANY(tags_en)
     ORDER BY created_at DESC
   `
 
@@ -29,7 +29,7 @@ export default async function TagPage({
   return (
     <main className="max-w-2xl mx-auto px-6 py-16">
       <div className="mb-10">
-        <Link href="/zh" className="text-sm text-gray-400 hover:underline">← 全部文章</Link>
+        <Link href="/en" className="text-sm text-gray-400 hover:underline">← All posts</Link>
         <h1 className="text-2xl font-bold mt-3"># {tag}</h1>
       </div>
 
@@ -37,22 +37,22 @@ export default async function TagPage({
         {posts.map((post) => (
           <li key={post.slug as string}>
             <p className="text-xs text-gray-400 mb-1">
-              <Link href={`/category/${post.category}`} className="hover:underline">
+              <Link href={`/en/category/${post.category}`} className="hover:underline">
                 {post.category as string}
               </Link>
               {' · '}
               {formatDate(post.created_at as string)}
             </p>
-            <Link href={`/zh/posts/${post.slug}`} className="group block">
+            <Link href={`/en/posts/${post.slug}`} className="group block">
               <h2 className="text-lg font-semibold group-hover:underline">
-                {post.title_zh as string}
+                {(post.title_en as string) || (post.title_zh as string)}
               </h2>
             </Link>
             <div className="flex gap-1 mt-2 flex-wrap">
-              {(post.tags as string[]).map((t) => (
+              {((post.tags_en || []) as string[]).map((t) => (
                 <Link
                   key={t}
-                  href={`/tag/${encodeURIComponent(t)}`}
+                  href={`/en/tag/${encodeURIComponent(t)}`}
                   className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${t === tag ? 'border-stone-700 text-stone-700' : 'border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600'}`}
                 >
                   {t}

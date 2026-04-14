@@ -29,7 +29,9 @@ async function translatePost(id: string) {
   const { title_zh, content_zh } = rows[0]
   if (!title_zh || !content_zh) return
 
-  const prompt = `Translate the following Chinese blog post to English. Return only JSON with "title_en" and "content_en" fields, no other text.
+  const prompt = `Translate the following Chinese blog post to English. Also extract 3–5 English keyword tags from the translated content.
+Return only JSON with "title_en", "content_en", and "tags_en" fields, no other text.
+tags_en should be an array of short English keywords (e.g. ["meditation", "self-awareness"]).
 
 title_zh: ${title_zh}
 content_zh: ${content_zh}`
@@ -52,6 +54,7 @@ content_zh: ${content_zh}`
     UPDATE posts
     SET title_en = ${translated.title_en || ''},
         content_en = ${translated.content_en || ''},
+        tags_en = ${translated.tags_en || []},
         updated_at = NOW()
     WHERE id = ${id}
   `

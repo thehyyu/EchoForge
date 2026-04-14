@@ -6,6 +6,11 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -30,7 +35,7 @@ export default async function PostPageEn({
   const { slug } = await params
 
   const rows = await sql`
-    SELECT title_zh, title_en, content_zh, content_en, category, tags, created_at
+    SELECT title_zh, title_en, content_zh, content_en, category, tags_en, created_at
     FROM posts
     WHERE slug = ${slug} AND status = 'published'
   `
@@ -54,15 +59,15 @@ export default async function PostPageEn({
           {post.category as string}
         </Link>
         {' · '}
-        {new Date(post.created_at as string).toLocaleDateString('en-US')}
+        {formatDate(post.created_at as string)}
       </p>
       <h1 className="text-2xl sm:text-3xl font-bold mb-6">{title}</h1>
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(post.tags as string[]).map((tag) => (
+        {((post.tags_en || []) as string[]).map((tag) => (
           <Link
             key={tag}
             href={`/tag/${encodeURIComponent(tag)}`}
-            className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200"
+            className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
           >
             {tag}
           </Link>

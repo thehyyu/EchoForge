@@ -524,8 +524,8 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-04-01
-**目前進度：** Branch 5.6、6.1 完成，待 Branch 6.3 上線
+**最後更新：** 2026-04-14
+**目前進度：** Branch 6.1 完成，UI 大幅重構，待 Branch 6.3 上線
 
 ### 已完成
 - Branch 0：環境就緒確認
@@ -534,8 +534,8 @@ graph TD
 - Branch 2.2–2.5：Neon DB、資料表 migration、Google OAuth（next-auth v5）
 - Branch 3.1：首頁文章列表
 - Branch 3.2：分類篩選頁 `/category/[slug]`
-- Branch 3.3：i18n 語言切換（`/zh/` 與 `/en/`，右上角切換連結）
-- Branch 3.4：全文搜尋（ILIKE，`/search`）
+- Branch 3.3：i18n 語言切換（`/zh/` 與 `/en/`，navbar 動態切換）
+- Branch 3.4：全文搜尋（ILIKE，`/search` 與 `/en/search`）
 - Branch 3.5：標籤篩選 `/tag/[slug]`、首頁底部文字雲
 - Branch 3.6：Markdown 渲染（react-markdown）、SEO generateMetadata、RSS feed（/feed/zh.xml、/feed/en.xml）
 - Branch 4.1：後台文章列表
@@ -547,10 +547,34 @@ graph TD
 - Branch 5.2：Whisper large-v3-mlx 轉逐字稿
 - Branch 5.3：Gemini share URL 爬取（Selenium + safaridriver，無需下載瀏覽器）
 - Branch 5.4：Qwen2.5 14B 潤飾 + 分類 + 關鍵字（人工點擊觸發，先預覽再存）
-- Branch 5.5：發佈時自動呼叫 Qwen2.5 翻譯英文版（背景非同步執行）
+- Branch 5.5：發佈時自動呼叫 Qwen2.5 翻譯英文版 + 萃取 tags_en（背景非同步執行）
 - Branch 5.6：error job 重試機制（retry API + JobErrorCard UI + 測試）
 - Branch 6.1：RWD 響應式修復（navbar、文章頁、後台各頁）
 - Branch 6.2：Giscus 略過（需 public repo，留待日後評估）
+
+### UI 重構（2026-04-14）
+- 字型改為 Noto Serif TC（原為 Geist Sans）
+- 底色套用 #F8F5F0 米白，文字 #2D2D2D
+- 標籤改為無填色 border-only 樣式（rounded-full）
+- 日期格式改為 `YYYY.MM`（列表）/ `YYYY.MM.DD`（文章頁）
+- Navbar 底線改為 border-stone-200
+- Footer 加入：`Hubert · thehyyu`、CC0 1.0 Universal 授權聲明
+- Sitemap（`/sitemap.xml`）：動態從 DB 產生，含 hreflang alternates
+- 根路由 `/` 改為 Accept-Language 偵測，自動導向 `/zh` 或 `/en`
+
+### 路由架構
+- `/` → Accept-Language 偵測 redirect（預設 `/zh`）
+- `/zh` → 華文首頁（原 `/`）
+- `/en` → 英文首頁
+- `/zh/posts/[slug]` ↔ `/en/posts/[slug]`（navbar 互切）
+- `/category/[slug]` ↔ `/en/category/[slug]`
+- `/tag/[slug]` ↔ `/en/tag/[slug]`
+- `/search` ↔ `/en/search`
+
+### 標籤雙命名空間
+- `posts.tags`：華文標籤，由 Qwen2.5 從中文內容萃取
+- `posts.tags_en`：英文標籤，發佈時由 Qwen2.5 從英文內容萃取
+- 補跑腳本：`web/scripts/backfill-tags-en.ts`
 
 ### 重要技術決策
 - Next.js 16：`middleware.ts` 已改名為 `proxy.ts`，需注意
@@ -559,6 +583,8 @@ graph TD
 - 翻譯：translategemma 棄用，直接用 Qwen2.5 14B 翻譯
 - 草稿生成流程：先預覽（不存 DB），滿意後才存為草稿
 - `turbopack.root` 須設定在 next.config.ts，避免多 lockfile 路徑偵測錯誤
+- NavLang / NavSearch / NavRss 皆為 client component，依 `usePathname` 動態切換
+- `useSearchParams` 需包在 Suspense 內（Next.js 要求）
 
 ### 遇到的挑戰
 - Vercel Blob store 需設為 public
@@ -569,4 +595,4 @@ graph TD
 - jest.config 需為 .js（CommonJS），不能用 .ts
 
 ### 下一步
-- Branch 6.3：部署 Vercel（env 設定、自訂域名）
+- Branch 6.3：部署 Vercel（env 設定、`NEXT_PUBLIC_SITE_URL`、自訂域名）

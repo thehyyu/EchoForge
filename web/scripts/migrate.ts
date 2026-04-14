@@ -30,6 +30,10 @@ async function migrate() {
     )
   `
 
+  await sql`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS tags_en TEXT[]
+  `
+
   console.log('Migration complete')
 }
 

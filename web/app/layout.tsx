@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Serif_TC, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import NavRss from "./NavRss";
+import NavLang from "./NavLang";
+import NavSearch from "./NavSearch";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSerifTC = Noto_Serif_TC({
+  weight: ["400", "700"],
   subsets: ["latin"],
+  variable: "--font-noto-serif-tc",
 });
 
 const geistMono = Geist_Mono({
@@ -35,19 +38,30 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${notoSerifTC.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <nav className="border-b px-4 sm:px-6 py-4 flex items-center justify-between">
+        <nav className="border-b border-stone-200 px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-semibold text-gray-800 hover:opacity-70">
             thehyyu
           </Link>
           <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-400">
-            <Link href="/search" className="hover:text-gray-700">搜尋</Link>
+            <NavSearch />
+            <NavLang />
             <NavRss />
           </div>
         </nav>
-        {children}
+        <div className="flex-1">{children}</div>
+        <footer className="mt-24 border-t border-stone-200 px-4 sm:px-6 py-10 text-xs text-stone-400 space-y-2">
+          <div className="font-semibold text-stone-500">Hubert &middot; <span lang="en">thehyyu</span></div>
+          <p>
+            <a href="https://github.com/thehyyu/my-first-ai-project" target="_blank" rel="noopener noreferrer" className="hover:text-stone-600 underline underline-offset-2">Site text and code</a>
+            {' '}are{' '}
+            <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer" className="hover:text-stone-600 underline underline-offset-2">CC0 1.0 Universal</a>
+            {' '}&mdash;{' '}
+            <span className="whitespace-nowrap">no rights reserved.</span>
+          </p>
+        </footer>
       </body>
     </html>
   );

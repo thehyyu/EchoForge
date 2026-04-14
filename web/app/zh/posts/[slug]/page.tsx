@@ -6,6 +6,11 @@ import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -56,7 +61,7 @@ export default async function PostPage({
           {post.category as string}
         </Link>
         {' · '}
-        {new Date(post.created_at as string).toLocaleDateString('zh-TW')}
+        {formatDate(post.created_at as string)}
       </p>
       <h1 className="text-2xl sm:text-3xl font-bold mb-6">{post.title_zh as string}</h1>
       <div className="flex gap-2 mb-8 flex-wrap">
@@ -64,7 +69,7 @@ export default async function PostPage({
           <Link
             key={tag}
             href={`/tag/${encodeURIComponent(tag)}`}
-            className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200"
+            className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
           >
             {tag}
           </Link>
