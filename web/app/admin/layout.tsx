@@ -5,10 +5,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-3 flex items-center justify-between">
-        <span className="font-semibold text-gray-700">Admin</span>
-        <div className="flex items-center gap-4 text-sm text-gray-600">
-          <span>{session?.user?.email}</span>
+      <header className="bg-white border-b px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        <span className="font-semibold text-gray-700 shrink-0">Admin</span>
+        <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-600 min-w-0">
+          <span className="truncate">{session?.user?.email}</span>
           <form action={async () => {
             'use server'
             await signOut({ redirectTo: '/' })

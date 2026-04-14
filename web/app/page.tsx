@@ -21,10 +21,10 @@ export default async function HomePage() {
   const tags = Object.entries(tagCount).sort((a, b) => b[1] - a[1])
 
   return (
-    <main className="max-w-2xl mx-auto px-6 py-16">
-      <div className="flex items-baseline justify-between mb-10">
+    <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 mb-10">
         <h1 className="text-2xl font-bold">文章</h1>
-        <div className="flex gap-4 text-sm text-gray-500">
+        <div className="flex gap-3 sm:gap-4 text-sm text-gray-500">
           {[
             { slug: 'work', label: '工作' },
             { slug: 'technology', label: '科技' },

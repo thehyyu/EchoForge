@@ -149,7 +149,7 @@ export default function PostEditor({
       </div>
 
       {/* 分類 + 標籤 */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium mb-1">分類</label>
           <select
@@ -174,7 +174,7 @@ export default function PostEditor({
       </div>
 
       {/* 按鈕 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
         <button
           onClick={handleSave}
           disabled={saving}

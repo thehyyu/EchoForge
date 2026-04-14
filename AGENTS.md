@@ -524,8 +524,8 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-03-31
-**目前進度：** Branch 3、4、5 大部分完成，待 Branch 5.6、6
+**最後更新：** 2026-04-01
+**目前進度：** Branch 5.6、6.1 完成，待 Branch 6.3 上線
 
 ### 已完成
 - Branch 0：環境就緒確認
@@ -548,6 +548,9 @@ graph TD
 - Branch 5.3：Gemini share URL 爬取（Selenium + safaridriver，無需下載瀏覽器）
 - Branch 5.4：Qwen2.5 14B 潤飾 + 分類 + 關鍵字（人工點擊觸發，先預覽再存）
 - Branch 5.5：發佈時自動呼叫 Qwen2.5 翻譯英文版（背景非同步執行）
+- Branch 5.6：error job 重試機制（retry API + JobErrorCard UI + 測試）
+- Branch 6.1：RWD 響應式修復（navbar、文章頁、後台各頁）
+- Branch 6.2：Giscus 略過（需 public repo，留待日後評估）
 
 ### 重要技術決策
 - Next.js 16：`middleware.ts` 已改名為 `proxy.ts`，需注意
@@ -566,7 +569,4 @@ graph TD
 - jest.config 需為 .js（CommonJS），不能用 .ts
 
 ### 下一步
-- Branch 5.6：error job 重試機制（後台加重試按鈕）
-- Branch 6.1：RWD 響應式
-- Branch 6.2：Giscus 留言（需先設定 GitHub Discussions）
 - Branch 6.3：部署 Vercel（env 設定、自訂域名）

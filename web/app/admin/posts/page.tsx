@@ -12,7 +12,7 @@ export default async function AdminPostsPage() {
   `
 
   return (
-    <main className="max-w-2xl mx-auto mt-16 p-8">
+    <main className="max-w-2xl mx-auto mt-8 sm:mt-16 p-4 sm:p-8">
       <h1 className="text-2xl font-bold mb-8">文章管理</h1>
       {posts.length === 0 ? (
         <p className="text-gray-500">目前沒有文章。</p>
@@ -20,7 +20,7 @@ export default async function AdminPostsPage() {
         <ul className="space-y-4">
           {posts.map((post) => (
             <li key={post.id} className="border rounded p-4 space-y-2">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                 <div>
                   <Link href={`/admin/posts/${post.id}`} className="text-lg font-medium hover:underline">
                     {post.title_zh}
@@ -40,7 +40,7 @@ export default async function AdminPostsPage() {
                     </a>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 sm:shrink-0">
                   <span className={`text-sm px-2 py-1 rounded ${
                     post.status === 'published'
                       ? 'bg-green-100 text-green-700'

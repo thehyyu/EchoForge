@@ -43,7 +43,7 @@ export default async function PostPageEn({
   const content = rawContent?.replace(/^#[^\n]*\n+/, '') ?? ''
 
   return (
-    <main className="max-w-2xl mx-auto mt-16 px-8 pb-16">
+    <main className="max-w-2xl mx-auto mt-8 sm:mt-16 px-4 sm:px-8 pb-16">
       <div className="flex justify-end mb-4">
         <Link href={`/zh/posts/${slug}`} className="text-sm text-gray-400 hover:underline">
           中文版 →
@@ -56,7 +56,7 @@ export default async function PostPageEn({
         {' · '}
         {new Date(post.created_at as string).toLocaleDateString('en-US')}
       </p>
-      <h1 className="text-3xl font-bold mb-6">{title}</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">{title}</h1>
       <div className="flex gap-2 mb-8 flex-wrap">
         {(post.tags as string[]).map((tag) => (
           <Link

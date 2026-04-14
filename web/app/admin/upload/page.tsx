@@ -67,7 +67,7 @@ export default function UploadPage() {
   }
 
   return (
-    <main className="max-w-lg mx-auto mt-16 p-8 space-y-12">
+    <main className="max-w-lg mx-auto mt-8 sm:mt-16 p-4 sm:p-8 space-y-12">
       {/* 音檔上傳 */}
       <section>
         <h1 className="text-2xl font-bold mb-6">上傳音檔</h1>

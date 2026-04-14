@@ -38,11 +38,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <nav className="border-b px-6 py-4 flex items-center justify-between">
+        <nav className="border-b px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-semibold text-gray-800 hover:opacity-70">
             thehyyu
           </Link>
-          <div className="flex items-center gap-4 text-sm text-gray-400">
+          <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-400">
             <Link href="/search" className="hover:text-gray-700">搜尋</Link>
             <NavRss />
           </div>
