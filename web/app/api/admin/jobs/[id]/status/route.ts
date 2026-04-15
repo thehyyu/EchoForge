@@ -14,7 +14,7 @@ export async function GET(
   const { status, result, error_message } = rows[0]
   return NextResponse.json({
     status,
-    result: result ? JSON.parse(result as string) : null,
+    result: result ?? null,
     error_message,
   })
 }

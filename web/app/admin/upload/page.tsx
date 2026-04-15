@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { upload } from '@vercel/blob/client'
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -19,23 +20,13 @@ export default function UploadPage() {
     setFileMessage('')
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'x-filename': file.name,
-          'content-type': file.type,
-        },
+      await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
       })
-      const data = await res.json()
-      if (res.ok) {
-        setFileStatus('done')
-        setFileMessage('上傳成功，任務已建立，等待 Mac mini 處理。')
-        setFile(null)
-      } else {
-        setFileStatus('error')
-        setFileMessage(data.error || '上傳失敗')
-      }
+      setFileStatus('done')
+      setFileMessage('上傳成功，任務已建立，等待 Mac mini 處理。')
+      setFile(null)
     } catch (err) {
       setFileStatus('error')
       setFileMessage((err as Error).message || '上傳失敗')

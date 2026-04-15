@@ -1,19 +1,30 @@
-import { put } from '@vercel/blob'
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { sql } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-export async function PUT(req: Request) {
-  const filename = req.headers.get('x-filename') || 'audio.m4a'
+export async function POST(request: Request): Promise<NextResponse> {
+  const body = (await request.json()) as HandleUploadBody
 
-  const blob = await put(filename, req.body!, {
-    access: 'public',
-    contentType: req.headers.get('content-type') || 'audio/mpeg',
-  })
+  try {
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async () => {
+        return {
+          allowedContentTypes: ['audio/mpeg', 'audio/mp4', 'audio/m4a', 'audio/wav', 'audio/webm', 'audio/ogg'],
+          maximumSizeInBytes: 500 * 1024 * 1024,
+        }
+      },
+      onUploadCompleted: async ({ blob }) => {
+        await sql`
+          INSERT INTO jobs (type, source_url, status)
+          VALUES ('voice', ${blob.url}, 'pending')
+        `
+      },
+    })
 
-  await sql`
-    INSERT INTO jobs (type, source_url, status)
-    VALUES ('voice', ${blob.url}, 'pending')
-  `
-
-  return NextResponse.json({ success: true, url: blob.url })
+    return NextResponse.json(jsonResponse)
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 400 })
+  }
 }
