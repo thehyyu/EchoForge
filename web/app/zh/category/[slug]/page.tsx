@@ -30,7 +30,7 @@ export default async function CategoryPage({
   const posts = await sql`
     SELECT slug, title_zh, category, tags, created_at
     FROM posts
-    WHERE status = 'published' AND category = ${slug}
+    WHERE status = 'published' AND hidden = false AND category = ${slug}
     ORDER BY created_at DESC
   `
 

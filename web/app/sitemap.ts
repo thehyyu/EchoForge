@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await sql`
     SELECT slug, updated_at
     FROM posts
-    WHERE status = 'published'
+    WHERE status = 'published' AND hidden = false
     ORDER BY updated_at DESC
   `
 

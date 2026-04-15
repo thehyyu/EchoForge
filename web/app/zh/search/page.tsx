@@ -18,7 +18,7 @@ export default async function SearchPage({
     const rows = await sql`
       SELECT slug, title_zh, category, created_at
       FROM posts
-      WHERE status = 'published'
+      WHERE status = 'published' AND hidden = false
         AND (title_zh ILIKE ${pattern}
           OR content_zh ILIKE ${pattern}
           OR title_en ILIKE ${pattern}

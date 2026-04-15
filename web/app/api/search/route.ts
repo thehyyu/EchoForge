@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const posts = await sql`
     SELECT slug, title_zh, title_en, category, created_at
     FROM posts
-    WHERE status = 'published'
+    WHERE status = 'published' AND hidden = false
       AND (title_zh ILIKE ${pattern}
         OR content_zh ILIKE ${pattern}
         OR title_en ILIKE ${pattern}

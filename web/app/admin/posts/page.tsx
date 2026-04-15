@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { sql } from '@/lib/db'
 import PublishButton from './PublishButton'
+import HideButton from './HideButton'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPostsPage() {
   const posts = await sql`
-    SELECT id, title_zh, category, tags, status, slug, created_at
+    SELECT id, title_zh, category, tags, status, slug, hidden, created_at
     FROM posts
     ORDER BY created_at DESC
   `
@@ -41,6 +42,9 @@ export default async function AdminPostsPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 sm:shrink-0">
+                  {post.hidden && (
+                    <span className="text-sm px-2 py-1 rounded bg-gray-100 text-gray-500">已隱藏</span>
+                  )}
                   <span className={`text-sm px-2 py-1 rounded ${
                     post.status === 'published'
                       ? 'bg-green-100 text-green-700'
@@ -50,6 +54,9 @@ export default async function AdminPostsPage() {
                   </span>
                   {post.status === 'draft' && (
                     <PublishButton postId={post.id as number} slug={post.slug as string} />
+                  )}
+                  {post.status === 'published' && (
+                    <HideButton postId={post.id as number} hidden={post.hidden as boolean} />
                   )}
                 </div>
               </div>

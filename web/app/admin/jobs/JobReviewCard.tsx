@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
 
 const DEFAULT_PROMPT = `你是一個部落格文章編輯。以下是語音轉文字的逐字稿，請整理成完整的中文部落格文章。
 
@@ -163,27 +162,63 @@ export default function JobReviewCard({
 
       {draft && (
         <div className="border-t pt-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">預覽結果</h3>
-            <div className="flex gap-2 text-xs text-gray-400">
-              <span className="bg-gray-100 px-2 py-1 rounded">{draft.category}</span>
-              {draft.tags.map((t) => (
-                <span key={t} className="bg-gray-100 px-2 py-1 rounded">{t}</span>
-              ))}
+          <h3 className="font-semibold text-gray-700">編輯草稿</h3>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">標題</label>
+            <input
+              type="text"
+              value={draft.title_zh}
+              onChange={(e) => setDraft({ ...draft, title_zh: e.target.value })}
+              className="w-full border rounded p-3 text-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">內文（Markdown）</label>
+            <textarea
+              value={draft.content_zh}
+              onChange={(e) => setDraft({ ...draft, content_zh: e.target.value })}
+              rows={16}
+              className="w-full border rounded p-3 text-sm font-mono leading-relaxed resize-y"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">分類</label>
+              <select
+                value={draft.category}
+                onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                className="w-full border rounded p-3"
+              >
+                {['work', 'technology', 'life', 'sadhaka'].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">標籤（逗號分隔）</label>
+              <input
+                type="text"
+                value={draft.tags.join(', ')}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    tags: e.target.value.split(/[、,，]/).map((t) => t.trim()).filter(Boolean),
+                  })
+                }
+                className="w-full border rounded p-3"
+              />
             </div>
           </div>
-          <h2 className="text-xl font-bold">{draft.title_zh}</h2>
-          <div className="prose prose-sm max-w-none">
-            <ReactMarkdown>
-              {draft.content_zh?.replace(/^#[^\n]*\n+/, '')}
-            </ReactMarkdown>
-          </div>
+
           <button
             onClick={handleSave}
             disabled={saving}
             className="px-4 py-2 border-2 border-black rounded font-medium disabled:opacity-50"
           >
-            {saving ? '儲存中...' : '✓ 滿意，存為草稿'}
+            {saving ? '儲存中...' : '✓ 存為草稿'}
           </button>
         </div>
       )}

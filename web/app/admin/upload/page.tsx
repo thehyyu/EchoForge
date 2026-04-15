@@ -20,7 +20,8 @@ export default function UploadPage() {
     setFileMessage('')
 
     try {
-      await upload(file.name, file, {
+      const uniqueName = `${Date.now()}-${file.name}`
+      await upload(uniqueName, file, {
         access: 'public',
         handleUploadUrl: '/api/upload',
       })

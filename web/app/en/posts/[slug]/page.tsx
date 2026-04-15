@@ -18,7 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const rows = await sql`
-    SELECT title_en, content_en, title_zh FROM posts WHERE slug = ${slug} AND status = 'published'
+    SELECT title_en, content_en, title_zh FROM posts WHERE slug = ${slug} AND status = 'published' AND hidden = false
   `
   if (rows.length === 0) return {}
   const post = rows[0]
@@ -37,7 +37,7 @@ export default async function PostPageEn({
   const rows = await sql`
     SELECT title_zh, title_en, content_zh, content_en, category, tags_en, created_at
     FROM posts
-    WHERE slug = ${slug} AND status = 'published'
+    WHERE slug = ${slug} AND status = 'published' AND hidden = false
   `
 
   if (rows.length === 0) notFound()

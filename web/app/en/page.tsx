@@ -12,7 +12,7 @@ export default async function HomePageEn() {
   const posts = await sql`
     SELECT slug, title_en, title_zh, category, tags_en, created_at
     FROM posts
-    WHERE status = 'published'
+    WHERE status = 'published' AND hidden = false
     ORDER BY created_at DESC
   `
 

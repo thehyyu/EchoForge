@@ -20,7 +20,7 @@ export default async function TagPage({
   const posts = await sql`
     SELECT slug, title_zh, category, tags, created_at
     FROM posts
-    WHERE status = 'published' AND ${tag} = ANY(tags)
+    WHERE status = 'published' AND hidden = false AND ${tag} = ANY(tags)
     ORDER BY created_at DESC
   `
 

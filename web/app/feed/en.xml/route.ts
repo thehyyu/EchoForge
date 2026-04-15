@@ -6,7 +6,7 @@ export async function GET() {
   const posts = await sql`
     SELECT slug, title_zh, title_en, content_en, category, created_at
     FROM posts
-    WHERE status = 'published'
+    WHERE status = 'published' AND hidden = false
     ORDER BY created_at DESC
     LIMIT 20
   `
