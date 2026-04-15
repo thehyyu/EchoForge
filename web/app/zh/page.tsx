@@ -35,7 +35,7 @@ export default async function HomePage() {
             { slug: 'life', label: '生活' },
             { slug: 'sadhaka', label: '修行' },
           ].map(({ slug, label }) => (
-            <Link key={slug} href={`/category/${slug}`} className="hover:text-gray-900">
+            <Link key={slug} href={`/zh/category/${slug}`} className="hover:text-gray-900">
               {label}
             </Link>
           ))}
@@ -49,7 +49,7 @@ export default async function HomePage() {
           {posts.map((post) => (
             <li key={post.slug as string}>
               <p className="text-xs text-gray-400 mb-1">
-                <Link href={`/category/${post.category}`} className="hover:underline">
+                <Link href={`/zh/category/${post.category}`} className="hover:underline">
                   {post.category as string}
                 </Link>
                 {' · '}
@@ -64,7 +64,7 @@ export default async function HomePage() {
                 {(post.tags as string[]).map((tag) => (
                   <Link
                     key={tag}
-                    href={`/tag/${encodeURIComponent(tag)}`}
+                    href={`/zh/tag/${encodeURIComponent(tag)}`}
                     className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
                   >
                     {tag}
@@ -83,7 +83,7 @@ export default async function HomePage() {
             {tags.map(([tag, count]) => (
               <Link
                 key={tag}
-                href={`/tag/${encodeURIComponent(tag)}`}
+                href={`/zh/tag/${encodeURIComponent(tag)}`}
                 className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
               >
                 {tag}

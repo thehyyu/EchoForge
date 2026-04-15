@@ -8,7 +8,7 @@ export default function NavSearch() {
   const isEn = pathname === '/en' || pathname.startsWith('/en/')
 
   return (
-    <Link href={isEn ? '/en/search' : '/search'} className="hover:text-gray-700">
+    <Link href={isEn ? '/en/search' : '/zh/search'} className="hover:text-gray-700">
       {isEn ? 'Search' : '搜尋'}
     </Link>
   )

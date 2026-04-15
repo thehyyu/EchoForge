@@ -49,7 +49,7 @@ export default async function HomePageEn() {
           {posts.map((post) => (
             <li key={post.slug as string}>
               <p className="text-xs text-gray-400 mb-1">
-                <Link href={`/category/${post.category}`} className="hover:underline">
+                <Link href={`/en/category/${post.category}`} className="hover:underline">
                   {post.category as string}
                 </Link>
                 {' · '}
@@ -83,7 +83,7 @@ export default async function HomePageEn() {
             {tags.map(([tag, count]) => (
               <Link
                 key={tag}
-                href={`/tag/${encodeURIComponent(tag)}`}
+                href={`/en/tag/${encodeURIComponent(tag)}`}
                 className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
               >
                 {tag}

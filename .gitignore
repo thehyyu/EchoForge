@@ -5,6 +5,7 @@
 .claude/settings.local.json
 __pycache__/
 *.pyc
+pipeline/poll.log
 node_modules/
 package-lock.json
 package.json

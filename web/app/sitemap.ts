@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ])
 
   const categoryEntries: MetadataRoute.Sitemap = CATEGORIES.flatMap((slug) => [
-    { url: `${BASE_URL}/category/${slug}` },
+    { url: `${BASE_URL}/zh/category/${slug}` },
     { url: `${BASE_URL}/en/category/${slug}` },
   ])
 
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/en`,
       alternates: { languages: { 'zh-TW': `${BASE_URL}/zh`, 'en': `${BASE_URL}/en` } },
     },
-    { url: `${BASE_URL}/search` },
+    { url: `${BASE_URL}/zh/search` },
     { url: `${BASE_URL}/en/search` },
     ...categoryEntries,
     ...postEntries,

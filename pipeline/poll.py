@@ -1,11 +1,23 @@
 import os
 import json
 import time
+import logging
 import requests
 import psycopg
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(os.path.join(os.path.dirname(__file__), 'poll.log'), encoding='utf-8'),
+    ]
+)
+log = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 OLLAMA_URL = 'http://localhost:11434/api/generate'
@@ -148,45 +160,45 @@ def set_job_error(job_id, error_message):
 
 def process_job(job):
     job_id, job_type, source_url, transcript, prompt_template, post_id = job
-    print(f'[Job {job_id}] 開始處理，type={job_type}')
+    log.info(f'[Job {job_id}] 開始處理，type={job_type}')
 
     try:
         if job_type == 'voice':
-            print(f'[Job {job_id}] 下載音檔...')
+            log.info(f'[Job {job_id}] 下載音檔...')
             audio_path = download_audio(source_url, job_id)
-            print(f'[Job {job_id}] Whisper 轉文字...')
+            log.info(f'[Job {job_id}] Whisper 轉文字...')
             transcript = transcribe(audio_path)
-            print(f'[Job {job_id}] 內容前80字：{transcript[:80]}...')
+            log.info(f'[Job {job_id}] 內容前80字：{transcript[:80]}...')
             set_job_transcribed(job_id, transcript)
-            print(f'[Job {job_id}] 完成，等待人工確認。')
+            log.info(f'[Job {job_id}] 完成，等待人工確認。')
 
         elif job_type == 'gemini':
-            print(f'[Job {job_id}] 爬取 Gemini 對話...')
+            log.info(f'[Job {job_id}] 爬取 Gemini 對話...')
             transcript = scrape_gemini(source_url)
-            print(f'[Job {job_id}] 內容前80字：{transcript[:80]}...')
+            log.info(f'[Job {job_id}] 內容前80字：{transcript[:80]}...')
             set_job_transcribed(job_id, transcript)
-            print(f'[Job {job_id}] 完成，等待人工確認。')
+            log.info(f'[Job {job_id}] 完成，等待人工確認。')
 
         elif job_type == 'generate':
-            print(f'[Job {job_id}] Qwen2.5 產生草稿...')
+            log.info(f'[Job {job_id}] Qwen2.5 產生草稿...')
             handle_generate(job_id, transcript, prompt_template)
-            print(f'[Job {job_id}] 草稿產生完成。')
+            log.info(f'[Job {job_id}] 草稿產生完成。')
 
         elif job_type == 'translate':
-            print(f'[Job {job_id}] Qwen2.5 翻譯文章 post_id={post_id}...')
+            log.info(f'[Job {job_id}] Qwen2.5 翻譯文章 post_id={post_id}...')
             handle_translate(job_id, post_id)
-            print(f'[Job {job_id}] 翻譯完成。')
+            log.info(f'[Job {job_id}] 翻譯完成。')
 
         else:
             raise ValueError(f'未知的 job type: {job_type}')
 
     except Exception as e:
-        print(f'[Job {job_id}] 錯誤：{e}')
+        log.error(f'[Job {job_id}] 錯誤：{e}', exc_info=True)
         set_job_error(job_id, str(e))
 
 
 def main():
-    print('Poll script 啟動')
+    log.info('Poll script 啟動')
 
     while True:
         with psycopg.connect(DATABASE_URL) as conn:
@@ -194,7 +206,7 @@ def main():
         if job:
             process_job(job)
         else:
-            print('沒有待處理任務，等待 30 秒...')
+            log.info('沒有待處理任務，等待 30 秒...')
         time.sleep(30)
 
 

@@ -33,7 +33,7 @@ export default async function SearchPage({
     <main className="max-w-2xl mx-auto px-6 py-16">
       <h1 className="text-2xl font-bold mb-8">搜尋</h1>
 
-      <form method="get" action="/search" className="mb-10">
+      <form method="get" action="/zh/search" className="mb-10">
         <input
           type="text"
           name="q"

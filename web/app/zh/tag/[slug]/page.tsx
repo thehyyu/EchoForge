@@ -37,7 +37,7 @@ export default async function TagPage({
         {posts.map((post) => (
           <li key={post.slug as string}>
             <p className="text-xs text-gray-400 mb-1">
-              <Link href={`/category/${post.category}`} className="hover:underline">
+              <Link href={`/zh/category/${post.category}`} className="hover:underline">
                 {post.category as string}
               </Link>
               {' · '}
@@ -52,7 +52,7 @@ export default async function TagPage({
               {(post.tags as string[]).map((t) => (
                 <Link
                   key={t}
-                  href={`/tag/${encodeURIComponent(t)}`}
+                  href={`/zh/tag/${encodeURIComponent(t)}`}
                   className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${t === tag ? 'border-stone-700 text-stone-700' : 'border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600'}`}
                 >
                   {t}

@@ -55,7 +55,7 @@ export default async function PostPageEn({
         </Link>
       </div>
       <p className="text-sm text-gray-400 mb-2">
-        <Link href={`/category/${post.category}`} className="hover:underline">
+        <Link href={`/en/category/${post.category}`} className="hover:underline">
           {post.category as string}
         </Link>
         {' · '}
@@ -66,7 +66,7 @@ export default async function PostPageEn({
         {((post.tags_en || []) as string[]).map((tag) => (
           <Link
             key={tag}
-            href={`/tag/${encodeURIComponent(tag)}`}
+            href={`/en/tag/${encodeURIComponent(tag)}`}
             className="text-xs border border-stone-300 text-stone-400 hover:border-stone-500 hover:text-stone-600 px-2 py-0.5 rounded-full transition-colors"
           >
             {tag}

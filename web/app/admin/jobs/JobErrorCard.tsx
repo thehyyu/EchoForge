@@ -26,7 +26,9 @@ export default function JobErrorCard({ jobId, jobType, errorMessage, createdAt }
     <li className="border border-red-200 rounded-lg p-6 bg-red-50">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-mono text-red-700">Job #{jobId} · {jobType}</span>
-        <span className="text-xs text-gray-400">{new Date(createdAt).toLocaleString('zh-TW')}</span>
+        <span className="text-xs text-gray-400" suppressHydrationWarning>
+          {new Date(createdAt).toLocaleString('zh-TW')}
+        </span>
       </div>
       <p className="text-sm text-red-600 bg-red-100 rounded p-3 font-mono break-all mb-4">
         {errorMessage}

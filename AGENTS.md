@@ -552,8 +552,8 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-04-14
-**目前進度：** Branch 6.1 完成，UI 大幅重構，進行 Branch 6.4 Ollama 隔離重構，完成後部署 6.3
+**最後更新：** 2026-04-15
+**目前進度：** Branch 6.4 完成，路由對稱性修正完畢，準備進行 Branch 6.3 部署 Vercel
 
 ### 已完成
 - Branch 0：環境就緒確認
@@ -579,6 +579,10 @@ graph TD
 - Branch 5.6：error job 重試機制（retry API + JobErrorCard UI + 測試）
 - Branch 6.1：RWD 響應式修復（navbar、文章頁、後台各頁）
 - Branch 6.2：Giscus 略過（需 public repo，留待日後評估）
+- Branch 6.4：Ollama 隔離重構（generate/publish route 改寫 job、poll.py 新增處理、後台草稿頁輪詢、後台 email 白名單）
+- 路由對稱性修正：`/zh/category/`、`/zh/tag/`、`/zh/search` 補上 `/zh/` 前綴，en 頁面連結 bug 一併修正
+- poll.py logging：`print()` 換成 Python `logging` 模組，加時間戳記與 `poll.log` 寫檔
+- hydration fix：`JobErrorCard` 日期 `toLocaleString` 加 `suppressHydrationWarning`
 
 ### UI 重構（2026-04-14）
 - 字型改為 Noto Serif TC（原為 Geist Sans）
@@ -623,10 +627,7 @@ graph TD
 - jest.config 需為 .js（CommonJS），不能用 .ts
 
 ### 下一步
-- Branch 6.4：Ollama 隔離重構
-  - `generate/route.ts` → 寫 job，不打 Ollama
-  - `publish/route.ts` → 寫 job，不打 Ollama
-  - `poll.py` 新增 generate / translate 處理
-  - 後台草稿頁加輪詢
-  - pytest 補測
-- Branch 6.3：部署 Vercel（6.4 完成後，env 設定、`NEXT_PUBLIC_SITE_URL`、自訂域名）
+- Branch 6.3：部署 Vercel
+  - env 設定（`NEXT_PUBLIC_SITE_URL`、`AUTH_GOOGLE_ID`、`AUTH_GOOGLE_SECRET`、`AUTH_SECRET`、`DATABASE_URL`、`BLOB_READ_WRITE_TOKEN` 等）
+  - `npx vercel deploy`
+  - 自訂域名（optional）
