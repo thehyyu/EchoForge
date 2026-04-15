@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Serif_TC, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import Script from "next/script";
 import NavRss from "./NavRss";
 import NavLang from "./NavLang";
 import NavSearch from "./NavSearch";
@@ -40,6 +41,13 @@ export default function RootLayout({
       lang="en"
       className={`${notoSerifTC.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-3NEHHM1057" strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-3NEHHM1057');
+        `}</Script>
       <body className="min-h-full flex flex-col">
         <nav className="border-b border-stone-200 px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-semibold text-gray-800 hover:opacity-70">
