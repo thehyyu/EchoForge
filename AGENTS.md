@@ -583,6 +583,7 @@ graph TD
 - 路由對稱性修正：`/zh/category/`、`/zh/tag/`、`/zh/search` 補上 `/zh/` 前綴，en 頁面連結 bug 一併修正
 - poll.py logging：`print()` 換成 Python `logging` 模組，加時間戳記與 `poll.log` 寫檔
 - hydration fix：`JobErrorCard` 日期 `toLocaleString` 加 `suppressHydrationWarning`
+- DB schema 整合測試：`pipeline/tests/test_schema.py` 驗證欄位完整性與 type constraint（`DATABASE_URL` 未設定時自動跳過）
 
 ### UI 重構（2026-04-14）
 - 字型改為 Noto Serif TC（原為 Geist Sans）
@@ -625,6 +626,11 @@ graph TD
 - Gemini share page 為 SPA，需 Selenium 等待渲染（sleep 10s）
 - React 19 + ts-jest 需 moduleNameMapper 指定 react 路徑
 - jest.config 需為 .js（CommonJS），不能用 .ts
+- **jobs 資料表 migration 未完整執行**（2026-04-15 手動補）：
+  - `jobs_type_check` constraint 只有 `('voice', 'gemini')`，需手動 ALTER 加入 `generate`、`translate`
+  - `prompt_template TEXT` 和 `result JSONB` 兩個欄位未建立，需手動 ALTER TABLE 補上
+  - 根本原因：unit test 全部 mock DB，schema 問題無法被測試抓到，已補 `test_schema.py` 防止再發生
+- **翻譯 prompt 未指定 Markdown**：Qwen2.5 翻譯輸出 HTML 而非 Markdown，已在 poll.py prompt 補上明確要求；unit test mock 了 `call_ollama` 所以也抓不到此類輸出品質問題
 
 ### 下一步
 - Branch 6.3：部署 Vercel
