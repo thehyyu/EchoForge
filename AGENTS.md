@@ -632,8 +632,45 @@ graph TD
   - 根本原因：unit test 全部 mock DB，schema 問題無法被測試抓到，已補 `test_schema.py` 防止再發生
 - **翻譯 prompt 未指定 Markdown**：Qwen2.5 翻譯輸出 HTML 而非 Markdown，已在 poll.py prompt 補上明確要求；unit test mock 了 `call_ollama` 所以也抓不到此類輸出品質問題
 
+### Branch 6.3 完成（2026-04-15）：部署 Vercel
+
+**正式網址：** https://thehyyu-blog.vercel.app
+
+- Vercel CLI 安裝：`npm i -g vercel`
+- 專案連結：`vercel`（在 `web/` 目錄下）
+- Env 變數透過 CLI 上傳：`vercel env add NAME production --force`
+  - 注意：pipe 上傳時需加 `tr -d '\n'` 去除換行，否則 Google OAuth 會 `invalid_client`
+- `AUTH_URL` 需明確設定為正式網址（next-auth v5 在 Vercel 上需要）
+- Google OAuth redirect URI 需在 Cloud Console 補上 `https://thehyyu-blog.vercel.app/api/auth/callback/google`
+- 音檔上傳改為 Vercel Blob Client Upload（瀏覽器直傳），繞過 4.5MB function body 限制
+- `result` 欄位為 JSONB，Neon 回傳已是物件，不需再 `JSON.parse()`
+
+---
+
+## 開發工作流程
+
+正式環境上線後，功能開發請遵循以下流程：
+
+### 大功能 / 有風險的修改
+```
+1. git checkout -b branch-X.X-feature-name   # 建新 branch
+2. npm run dev                                 # 本機開發測試
+3. vercel                                      # 部署到 Preview 網址驗證
+4. git checkout main && git merge branch-X.X  # 確認後 merge
+5. vercel --prod                               # 部署正式環境
+```
+
+### 小修正 / Bug fix
+```
+1. 直接在 main 修改
+2. vercel --prod
+```
+
+### 原則
+- **不在 main 上直接開發大功能**，避免正式站壞掉
+- `vercel`（不加 `--prod`）會產生獨立 Preview 網址，可安全測試
+- poll.py 啟動方式：`source /path/to/.venv/bin/activate && python3 pipeline/poll.py &`
+
 ### 下一步
-- Branch 6.3：部署 Vercel
-  - env 設定（`NEXT_PUBLIC_SITE_URL`、`AUTH_GOOGLE_ID`、`AUTH_GOOGLE_SECRET`、`AUTH_SECRET`、`DATABASE_URL`、`BLOB_READ_WRITE_TOKEN` 等）
-  - `npx vercel deploy`
-  - 自訂域名（optional）
+- 自訂域名（optional）
+- Giscus 留言（需 public repo，目前略過）
