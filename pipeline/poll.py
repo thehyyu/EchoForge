@@ -118,6 +118,7 @@ def handle_translate(job_id, post_id):
     title_zh, content_zh = row
     prompt = f"""Translate the following Chinese blog post to English. Also extract 3–5 English keyword tags from the translated content.
 Return only JSON with "title_en", "content_en", and "tags_en" fields, no other text.
+content_en must use Markdown formatting (headings with #, bold with **, lists with -), NOT HTML tags.
 tags_en should be an array of short English keywords.
 
 title_zh: {title_zh}
