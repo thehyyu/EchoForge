@@ -553,7 +553,7 @@ graph TD
 ## 當前狀態
 
 **最後更新：** 2026-04-15
-**目前進度：** Branch 6.4 完成，路由對稱性修正完畢，準備進行 Branch 6.3 部署 Vercel
+**目前進度：** Branch 6.3 完成，正式上線，後續維護與功能迭代中
 
 ### 已完成
 - Branch 0：環境就緒確認
@@ -671,6 +671,16 @@ graph TD
 - `vercel`（不加 `--prod`）會產生獨立 Preview 網址，可安全測試
 - poll.py 啟動方式：`source /path/to/.venv/bin/activate && python3 pipeline/poll.py &`
 
+### 2026-04-15 上線後修正與新功能
+
+- **音檔上傳改為 Vercel Blob Client Upload**：繞過 4.5MB function body 限制，瀏覽器直傳 Blob，`onUploadCompleted` callback 建立 job（本機 dev 無法觸發 callback，需在正式環境測試）
+- **音檔檔名加時間戳前綴**：避免重複上傳同名檔案報錯（`${Date.now()}-${file.name}`）
+- **修正 `/api/admin/jobs/[id]/status` 500 錯誤**：`result` 欄位為 JSONB，Neon 回傳已是物件，移除多餘 `JSON.parse()`
+- **草稿編輯介面**：`JobReviewCard` 產生預覽後，結果區改為可編輯欄位（標題、內文、分類、標籤），不再是唯讀預覽，存草稿前可直接修改
+- **文章軟刪除（隱藏功能）**：`posts` 表新增 `hidden BOOLEAN DEFAULT false`，所有前台查詢加 `AND hidden = false`，後台 `admin/posts` 加「隱藏 / 顯示」切換按鈕，`POST /api/admin/posts/[id]/hide` toggle 狀態
+- **Google Analytics 4**：Measurement ID `G-3NEHHM1057`，透過 `next/script` 加入 `layout.tsx`，`strategy="afterInteractive"`
+
 ### 下一步
+- 測試完整音檔流程（正式環境端到端）
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）
