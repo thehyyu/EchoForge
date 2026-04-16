@@ -5,7 +5,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from poll import download_audio, set_job_error, handle_generate, handle_translate, process_job
+from poll import download_audio, set_job_error, handle_generate, handle_translate, process_job, delete_blob
 
 
 def make_job(job_id, job_type, source_url=None, transcript=None, prompt_template=None, post_id=None):
@@ -155,3 +155,53 @@ def test_process_job_translate_calls_handle_translate():
         with patch("poll.set_job_error"):
             process_job(make_job(6, "translate", post_id=42))
             mock_trans.assert_called_once_with(6, 42)
+
+
+# --- delete_blob 測試 ---
+
+def test_delete_blob_calls_requests_delete():
+    mock_resp = MagicMock()
+    mock_resp.raise_for_status.return_value = None
+
+    with patch("poll.BLOB_TOKEN", "fake-token"):
+        with patch("poll.requests.delete", return_value=mock_resp) as mock_del:
+            delete_blob("https://blob.vercel-storage.com/audio/test.m4a")
+
+    mock_del.assert_called_once()
+    call_kwargs = mock_del.call_args
+    assert call_kwargs[0][0] == "https://blob.vercel-storage.com"
+    headers = call_kwargs[1]["headers"]
+    assert headers["Authorization"] == "Bearer fake-token"
+    assert headers["x-api-version"] == "7"
+    body = call_kwargs[1]["json"]
+    assert body == {"urls": ["https://blob.vercel-storage.com/audio/test.m4a"]}
+
+
+def test_delete_blob_skips_when_no_token(caplog):
+    with patch("poll.BLOB_TOKEN", ""):
+        with patch("poll.requests.delete") as mock_del:
+            import logging
+            with caplog.at_level(logging.WARNING):
+                delete_blob("https://blob.vercel-storage.com/audio/test.m4a")
+    mock_del.assert_not_called()
+    assert "BLOB_READ_WRITE_TOKEN" in caplog.text
+
+
+def test_process_job_voice_deletes_blob_after_transcribe():
+    with patch("poll.download_audio", return_value="/tmp/job_1.m4a"):
+        with patch("poll.transcribe", return_value="逐字稿內容"):
+            with patch("poll.set_job_transcribed"):
+                with patch("poll.delete_blob") as mock_del:
+                    process_job(make_job(1, "voice", source_url="https://blob.vercel-storage.com/audio/test.m4a"))
+                    mock_del.assert_called_once_with("https://blob.vercel-storage.com/audio/test.m4a")
+
+
+def test_process_job_voice_blob_delete_failure_does_not_fail_job():
+    with patch("poll.download_audio", return_value="/tmp/job_1.m4a"):
+        with patch("poll.transcribe", return_value="逐字稿內容"):
+            with patch("poll.set_job_transcribed") as mock_transcribed:
+                with patch("poll.delete_blob", side_effect=Exception("Blob 服務無回應")):
+                    with patch("poll.set_job_error") as mock_err:
+                        process_job(make_job(1, "voice", source_url="https://blob.vercel-storage.com/audio/test.m4a"))
+                    mock_transcribed.assert_called_once()
+                    mock_err.assert_not_called()

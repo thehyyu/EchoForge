@@ -21,6 +21,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
+BLOB_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 
 
@@ -54,6 +55,25 @@ def transcribe(audio_path):
         path_or_hf_repo='mlx-community/whisper-large-v3-mlx'
     )
     return result['text'].strip()
+
+
+def delete_blob(url):
+    """Whisper 轉逐字稿成功後，刪除 Vercel Blob 上的原始音檔以釋放空間。"""
+    if not BLOB_TOKEN:
+        log.warning('BLOB_READ_WRITE_TOKEN 未設定，略過音檔清理')
+        return
+    resp = requests.delete(
+        'https://blob.vercel-storage.com',
+        headers={
+            'Authorization': f'Bearer {BLOB_TOKEN}',
+            'x-api-version': '7',
+            'Content-Type': 'application/json',
+        },
+        json={'urls': [url]},
+        timeout=30,
+    )
+    resp.raise_for_status()
+    log.info(f'[Blob] 音檔已刪除：{url}')
 
 
 def scrape_gemini(url):
@@ -172,6 +192,10 @@ def process_job(job):
             transcript = transcribe(audio_path)
             log.info(f'[Job {job_id}] 內容前80字：{transcript[:80]}...')
             set_job_transcribed(job_id, transcript)
+            try:
+                delete_blob(source_url)
+            except Exception as e:
+                log.warning(f'[Job {job_id}] Blob 刪除失敗（不影響逐字稿）：{e}')
             log.info(f'[Job {job_id}] 完成，等待人工確認。')
 
         elif job_type == 'gemini':
