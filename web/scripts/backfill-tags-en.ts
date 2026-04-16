@@ -18,7 +18,7 @@ ${content.slice(0, 2000)}`
   const res = await fetch(OLLAMA_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'qwen2.5:14b', prompt, stream: false }),
+    body: JSON.stringify({ model: 'qwen2.5:32b', prompt, stream: false }),
   })
 
   if (!res.ok) throw new Error(`Ollama error: ${res.status}`)

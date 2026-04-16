@@ -84,8 +84,8 @@ graph TD
 - **Database:** Neon Postgres
 - **Storage:** Vercel Blob（音檔）
 - **STT:** mlx-whisper（Mac mini，本地，需 ffmpeg）
-- **AI 潤飾 / 分類 / 關鍵字:** Qwen2.5 14B（Mac mini，本地，Ollama）
-- **翻譯:** Qwen2.5 14B（Mac mini，本地，與潤飾共用同一模型）
+- **AI 潤飾 / 分類 / 關鍵字:** Qwen2.5 32B（Mac mini，本地，Ollama）
+- **翻譯:** Qwen2.5 32B（Mac mini，本地，與潤飾共用同一模型）
 - **本地背景服務:** Mac mini Python script
 
 ---
@@ -144,7 +144,7 @@ graph TD
 - [ ] Python venv：`python -m venv .venv`（在專案資料夾內）
 - [ ] Vercel 帳號：vercel.com，執行 `npx vercel login`
 - [ ] Neon 帳號：neon.tech，取得 connection string
-- [ ] Qwen2.5 14B：`ollama pull qwen2.5:14b`
+- [ ] Qwen2.5 32B：`ollama pull qwen2.5:32b`
 - [ ] Google OAuth Client ID（後台登入）
 - [ ] GitHub repo + Giscus 設定
 
@@ -168,7 +168,7 @@ graph TD
 - [ ] pyenv 已安裝，`pyenv --version` 回傳版本號
 - [ ] `npx vercel login` 完成，Vercel 帳號已連結
 - [ ] Neon connection string 已取得，可成功連線 DB
-- [ ] Qwen2.5 14B 已拉取，`ollama list` 輸出包含 `qwen2.5:14b`
+- [ ] Qwen2.5 32B 已拉取，`ollama list` 輸出包含 `qwen2.5:32b`
 - [ ] Google OAuth Client ID 已設定於 .env.local
 - [ ] GitHub repo 已建立
 - [ ] Mac mini：`curl http://localhost:11434/api/tags` 回傳 200
@@ -460,7 +460,7 @@ graph TD
 ### 5.4 Qwen2.5 潤飾 + 分類 + 關鍵字
 
 **觸發方式：** 由後台人工點擊「產生草稿」觸發（非自動），透過 `/api/admin/jobs/[id]/generate` API
-**Input:** 人工審核（可編輯）後的逐字稿、可調整的 Prompt 模板、Ollama 已安裝 Qwen2.5 14B
+**Input:** 人工審核（可編輯）後的逐字稿、可調整的 Prompt 模板、Ollama 已安裝 Qwen2.5 32B
 **Output:** 結構化物件（title_zh, content_zh, category, tags），寫入 posts 草稿
 **Success criteria:**
 - [ ] [RED] 給定中文逐字稿，應回傳含 title_zh, content_zh 的結構
@@ -473,7 +473,7 @@ graph TD
 
 ### 5.5 TranslateGemma 翻譯
 
-**Input:** title_zh, content_zh、Ollama 已安裝 Qwen2.5 14B
+**Input:** title_zh, content_zh、Ollama 已安裝 Qwen2.5 32B
 **Output:** title_en, content_en 字串，寫入 posts 草稿
 **Success criteria:**
 - [ ] [RED] 給定中文文章，應回傳非空英文字串
@@ -574,7 +574,7 @@ graph TD
 - Branch 5.1：Poll 機制（FOR UPDATE SKIP LOCKED）
 - Branch 5.2：Whisper large-v3-mlx 轉逐字稿
 - Branch 5.3：Gemini share URL 爬取（Selenium + safaridriver，無需下載瀏覽器）
-- Branch 5.4：Qwen2.5 14B 潤飾 + 分類 + 關鍵字（人工點擊觸發，先預覽再存）
+- Branch 5.4：Qwen2.5 32B 潤飾 + 分類 + 關鍵字（人工點擊觸發，先預覽再存）
 - Branch 5.5：發佈時自動呼叫 Qwen2.5 翻譯英文版 + 萃取 tags_en（背景非同步執行）
 - Branch 5.6：error job 重試機制（retry API + JobErrorCard UI + 測試）
 - Branch 6.1：RWD 響應式修復（navbar、文章頁、後台各頁）
@@ -613,7 +613,7 @@ graph TD
 - Next.js 16：`middleware.ts` 已改名為 `proxy.ts`，需注意
 - next-auth v5 beta：env var 名稱為 `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` / `AUTH_SECRET`
 - Gemini 爬取：requests 無法渲染 JS，改用 Selenium + safaridriver（macOS 預裝）
-- 翻譯：translategemma 棄用，直接用 Qwen2.5 14B 翻譯
+- 翻譯：translategemma 棄用，直接用 Qwen2.5 32B 翻譯
 - 草稿生成流程：先預覽（不存 DB），滿意後才存為草稿
 - `turbopack.root` 須設定在 next.config.ts，避免多 lockfile 路徑偵測錯誤
 - NavLang / NavSearch / NavRss 皆為 client component，依 `usePathname` 動態切換
@@ -682,5 +682,6 @@ graph TD
 
 ### 下一步
 - 測試完整音檔流程（正式環境端到端）
+- **Vercel Blob 音檔自動清理**：Whisper 轉逐字稿成功後（status → transcribed），poll.py 立刻呼叫 Vercel Blob DELETE API 刪除原始音檔，釋放免費 2GB 空間。只需改 poll.py Whisper 處理段，加一個 HTTP DELETE 呼叫。
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）

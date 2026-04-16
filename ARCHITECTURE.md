@@ -32,7 +32,7 @@ Vercel (Next.js)                              Google OAuth
                    │   poll.py  ◄── 每 30 秒輪詢 Neon jobs      │
                    │      │                                     │
                    │      ├─── localhost:11434 ──► Ollama        │
-                   │      │                       Qwen2.5 14B   │
+                   │      │                       Qwen2.5 32B   │
                    │      │                       （不對外暴露） │
                    │      │                                     │
                    │      └─── subprocess ──────► Selenium      │

@@ -5,6 +5,7 @@ import logging
 import requests
 import psycopg
 from dotenv import load_dotenv
+from json_repair import repair_json
 
 load_dotenv()
 
@@ -81,14 +82,14 @@ def scrape_gemini(url):
 def call_ollama(prompt):
     res = requests.post(
         OLLAMA_URL,
-        json={'model': 'qwen2.5:14b', 'prompt': prompt, 'stream': False},
-        timeout=300,
+        json={'model': 'qwen2.5:32b', 'prompt': prompt, 'stream': False},
+        timeout=600,
     )
     res.raise_for_status()
     text = res.json()['response']
     start = text.index('{')
     end = text.rindex('}') + 1
-    return json.loads(text[start:end])
+    return json.loads(repair_json(text[start:end]))
 
 
 def handle_generate(job_id, transcript, prompt_template):

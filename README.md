@@ -16,7 +16,7 @@ A bilingual (zh/en) audio content publishing platform. Upload audio files, let t
 | Database | Neon PostgreSQL |
 | File storage | Vercel Blob |
 | Auth | NextAuth.js + Google OAuth |
-| AI pipeline | Ollama (Qwen2.5 14B), runs locally |
+| AI pipeline | Ollama (Qwen2.5 32B), runs locally |
 
 ## Architecture
 
