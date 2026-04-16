@@ -552,7 +552,7 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-04-15
+**最後更新：** 2026-04-16
 **目前進度：** Branch 6.3 完成，正式上線，後續維護與功能迭代中
 
 ### 已完成
@@ -671,6 +671,19 @@ graph TD
 - `vercel`（不加 `--prod`）會產生獨立 Preview 網址，可安全測試
 - poll.py 啟動方式：`source /path/to/.venv/bin/activate && python3 pipeline/poll.py &`
 
+### 2026-04-16 修正與功能
+
+- **favicon & iOS 主畫面 icon**：`app/icon.svg`（SVG）+ `app/apple-icon.tsx`（ImageResponse），H + 三角形極簡設計，支援 PWA 加入主畫面
+- **iOS Safari 音檔選取修正**：`accept` 改為 `audio/mp4,audio/m4a,audio/mpeg,audio/wav,.m4a,.mp4,.mp3,.wav`，補上明確副檔名，修正 Safari 無法選取音檔問題
+- **Footer GitHub repo 連結更新**：改為指向 EchoForge repo
+- **MIT License 加入**：根目錄新增 `LICENSE`
+- **README 全面更新**：根目錄與 web/ 的 README 完整補上架構說明、快速啟動指令
+- **admin email 改為 env var**：`ADMIN_EMAIL` 從 hardcode 移至 `.env.local`，`web/auth.ts` 讀取環境變數
+- **LLM 升級 Qwen2.5 14B → 32B**：`poll.py` 改用 `qwen2.5:32b`，timeout 延長至 600s
+- **加入 json-repair**：修正 LLM 輸出非標準 JSON 導致解析失敗的問題，`pipeline/requirements.txt` 新增 `json-repair`
+- **CI 補 json-repair 依賴**：`.github/workflows/test.yml` 補上 `pip install json-repair`，修正 CI 測試失敗
+- **Vercel Blob 音檔自動清理**：`poll.py` 新增 `delete_blob(url)`，voice job 轉完逐字稿後立即呼叫 Vercel Blob DELETE API（`https://blob.vercel-storage.com`，`x-api-version: 7`），釋放免費 2GB 空間；刪除失敗只 log warning 不影響逐字稿 job；需設定 `BLOB_READ_WRITE_TOKEN` 環境變數；補 4 個 pytest 覆蓋此邏輯
+
 ### 2026-04-15 上線後修正與新功能
 
 - **音檔上傳改為 Vercel Blob Client Upload**：繞過 4.5MB function body 限制，瀏覽器直傳 Blob，`onUploadCompleted` callback 建立 job（本機 dev 無法觸發 callback，需在正式環境測試）
@@ -682,6 +695,5 @@ graph TD
 
 ### 下一步
 - 測試完整音檔流程（正式環境端到端）
-- **Vercel Blob 音檔自動清理**：Whisper 轉逐字稿成功後（status → transcribed），poll.py 立刻呼叫 Vercel Blob DELETE API 刪除原始音檔，釋放免費 2GB 空間。只需改 poll.py Whisper 處理段，加一個 HTTP DELETE 呼叫。
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）
