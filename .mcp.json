@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "echoforge-blog": {
+      "command": "/Users/thehyyu/Documents/EchoForge/.venv/bin/python3",
+      "args": ["/Users/thehyyu/Documents/EchoForge/pipeline/mcp_server.py"]
+    }
+  }
+}
