@@ -63,7 +63,7 @@ export default function RootLayout({
         <footer className="mt-24 border-t border-stone-200 px-4 sm:px-6 py-10 text-xs text-stone-400 space-y-2">
           <div className="font-semibold text-stone-500">Hubert &middot; <span lang="en">thehyyu</span></div>
           <p>
-            <a href="https://github.com/thehyyu/my-first-ai-project" target="_blank" rel="noopener noreferrer" className="hover:text-stone-600 underline underline-offset-2">Site text and code</a>
+            <a href="https://github.com/thehyyu/EchoForge" target="_blank" rel="noopener noreferrer" className="hover:text-stone-600 underline underline-offset-2">Site text and code</a>
             {' '}are{' '}
             <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer" className="hover:text-stone-600 underline underline-offset-2">CC0 1.0 Universal</a>
             {' '}&mdash;{' '}
