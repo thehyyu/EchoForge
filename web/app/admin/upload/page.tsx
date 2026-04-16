@@ -66,7 +66,7 @@ export default function UploadPage() {
         <form onSubmit={handleFileSubmit} className="space-y-4">
           <input
             type="file"
-            accept="audio/*"
+            accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg,.flac"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             className="block w-full"
           />
