@@ -119,6 +119,7 @@ PROOFREAD_PROMPT = """以下是語音轉文字的逐字稿，請進行校正：
 2. 補充適當標點符號
 3. 保持原始說話風格與口吻，不要改寫或摘要內容
 4. 僅回傳校正後的逐字稿文字，不要有任何其他說明或標題
+5. 回傳語言必須與輸入逐字稿相同，不得翻譯
 
 逐字稿：
 {transcript}"""
@@ -135,8 +136,8 @@ def handle_proofread(job_id, transcript):
 
     res = requests.post(
         OLLAMA_URL,
-        json={'model': 'qwen2.5:32b', 'prompt': PROOFREAD_PROMPT.format(transcript=transcript), 'stream': False},
-        timeout=600,
+        json={'model': 'mistral:v0.3', 'prompt': PROOFREAD_PROMPT.format(transcript=transcript), 'stream': False},
+        timeout=300,
     )
     res.raise_for_status()
     corrected = res.json()['response'].strip()
