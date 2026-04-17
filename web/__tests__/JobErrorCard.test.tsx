@@ -38,7 +38,7 @@ describe('JobErrorCard', () => {
     fireEvent.click(screen.getByText('重試'))
 
     await waitFor(() => {
-      expect(screen.getByText(/重試失敗/)).toBeInTheDocument()
+      expect(screen.getByText(/操作失敗/)).toBeInTheDocument()
     })
   })
 })
