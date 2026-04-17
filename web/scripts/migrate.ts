@@ -60,6 +60,23 @@ async function migrate() {
     )
   `
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS dictionary (
+      id SERIAL PRIMARY KEY,
+      wrong TEXT NOT NULL,
+      correct TEXT NOT NULL
+    )
+  `
+
+  await sql`
+    ALTER TABLE jobs DROP CONSTRAINT IF EXISTS jobs_type_check
+  `
+
+  await sql`
+    ALTER TABLE jobs ADD CONSTRAINT jobs_type_check
+    CHECK (type IN ('voice', 'gemini', 'generate', 'translate', 'generate_prompt', 'proofread'))
+  `
+
   console.log('Migration complete')
 }
 

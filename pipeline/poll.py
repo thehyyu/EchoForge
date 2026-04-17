@@ -114,6 +114,42 @@ prompt 必須：
 描述：{description}"""
 
 
+PROOFREAD_PROMPT = """以下是語音轉文字的逐字稿，請進行校正：
+1. 修正錯別字與文法錯誤
+2. 補充適當標點符號
+3. 保持原始說話風格與口吻，不要改寫或摘要內容
+4. 僅回傳校正後的逐字稿文字，不要有任何其他說明或標題
+
+逐字稿：
+{transcript}"""
+
+
+def handle_proofread(job_id, transcript):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT wrong, correct FROM dictionary')
+            dictionary = cur.fetchall()
+
+    for wrong, correct in dictionary:
+        transcript = transcript.replace(wrong, correct)
+
+    res = requests.post(
+        OLLAMA_URL,
+        json={'model': 'qwen2.5:32b', 'prompt': PROOFREAD_PROMPT.format(transcript=transcript), 'stream': False},
+        timeout=600,
+    )
+    res.raise_for_status()
+    corrected = res.json()['response'].strip()
+
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE jobs SET status = 'done', result = %s WHERE id = %s",
+                (json.dumps({'transcript': corrected}), job_id)
+            )
+            conn.commit()
+
+
 def handle_generate_prompt(job_id, description):
     prompt = META_PROMPT.format(description=description)
     res = requests.post(
@@ -229,6 +265,11 @@ def process_job(job):
             log.info(f'[Job {job_id}] Qwen2.5 產生草稿...')
             handle_generate(job_id, transcript, prompt_template)
             log.info(f'[Job {job_id}] 草稿產生完成。')
+
+        elif job_type == 'proofread':
+            log.info(f'[Job {job_id}] 校正逐字稿...')
+            handle_proofread(job_id, transcript)
+            log.info(f'[Job {job_id}] 校正完成。')
 
         elif job_type == 'generate_prompt':
             log.info(f'[Job {job_id}] 自動生成 Prompt...')
