@@ -10,17 +10,22 @@ interface Props {
 }
 
 export default function JobErrorCard({ jobId, jobType, errorMessage, createdAt }: Props) {
-  const [status, setStatus] = useState<'idle' | 'retrying' | 'done' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'retrying' | 'deleting' | 'done' | 'deleted' | 'error'>('idle')
 
   async function handleRetry() {
     setStatus('retrying')
     const res = await fetch(`/api/admin/jobs/${jobId}/retry`, { method: 'POST' })
-    if (res.ok) {
-      setStatus('done')
-    } else {
-      setStatus('error')
-    }
+    setStatus(res.ok ? 'done' : 'error')
   }
+
+  async function handleDelete() {
+    if (!confirm(`確定要刪除 Job #${jobId}？`)) return
+    setStatus('deleting')
+    const res = await fetch(`/api/admin/jobs/${jobId}/delete`, { method: 'DELETE' })
+    setStatus(res.ok ? 'deleted' : 'error')
+  }
+
+  if (status === 'deleted') return null
 
   return (
     <li className="border border-red-200 rounded-lg p-6 bg-red-50">
@@ -36,16 +41,25 @@ export default function JobErrorCard({ jobId, jobType, errorMessage, createdAt }
       {status === 'done' ? (
         <p className="text-sm text-green-600">已重新排入佇列，等待 Mac mini 處理。</p>
       ) : (
-        <button
-          onClick={handleRetry}
-          disabled={status === 'retrying'}
-          className="text-sm px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-        >
-          {status === 'retrying' ? '重試中...' : '重試'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleRetry}
+            disabled={status === 'retrying' || status === 'deleting'}
+            className="text-sm px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {status === 'retrying' ? '重試中...' : '重試'}
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={status === 'retrying' || status === 'deleting'}
+            className="text-sm px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+          >
+            {status === 'deleting' ? '刪除中...' : '刪除'}
+          </button>
+        </div>
       )}
       {status === 'error' && (
-        <p className="text-sm text-red-500 mt-2">重試失敗，請稍後再試。</p>
+        <p className="text-sm text-red-500 mt-2">操作失敗，請稍後再試。</p>
       )}
     </li>
   )
