@@ -48,7 +48,16 @@ async function migrate() {
 
   await sql`
     ALTER TABLE jobs ADD CONSTRAINT jobs_type_check
-    CHECK (type IN ('voice', 'gemini', 'generate', 'translate'))
+    CHECK (type IN ('voice', 'gemini', 'generate', 'translate', 'generate_prompt'))
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS prompt_templates (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
   `
 
   console.log('Migration complete')

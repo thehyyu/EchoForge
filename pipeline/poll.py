@@ -103,6 +103,35 @@ def call_ollama(prompt):
     return json.loads(repair_json(text[start:end]))
 
 
+META_PROMPT = """你是一個 prompt 工程師。根據以下描述，為部落格文章生成一個 prompt 模板。
+prompt 必須：
+1. 要求只回傳 JSON，格式包含 title_zh、content_zh（Markdown）、category（work/technology/life/sadhaka 之一）、tags（陣列）
+2. 包含 {{transcript}} 作為逐字稿的佔位符
+3. 語氣專業，指示清晰
+
+只回傳 prompt 文字本身，不要有其他說明。
+
+描述：{description}"""
+
+
+def handle_generate_prompt(job_id, description):
+    prompt = META_PROMPT.format(description=description)
+    res = requests.post(
+        OLLAMA_URL,
+        json={'model': 'qwen2.5:32b', 'prompt': prompt, 'stream': False},
+        timeout=300,
+    )
+    res.raise_for_status()
+    generated = res.json()['response'].strip()
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE jobs SET status = 'done', result = %s WHERE id = %s",
+                (json.dumps({'prompt': generated}), job_id)
+            )
+            conn.commit()
+
+
 def handle_generate(job_id, transcript, prompt_template):
     prompt = prompt_template.replace('{{transcript}}', transcript)
     result = call_ollama(prompt)
@@ -200,6 +229,11 @@ def process_job(job):
             log.info(f'[Job {job_id}] Qwen2.5 產生草稿...')
             handle_generate(job_id, transcript, prompt_template)
             log.info(f'[Job {job_id}] 草稿產生完成。')
+
+        elif job_type == 'generate_prompt':
+            log.info(f'[Job {job_id}] 自動生成 Prompt...')
+            handle_generate_prompt(job_id, transcript)
+            log.info(f'[Job {job_id}] Prompt 生成完成。')
 
         elif job_type == 'translate':
             log.info(f'[Job {job_id}] Qwen2.5 翻譯文章 post_id={post_id}...')
