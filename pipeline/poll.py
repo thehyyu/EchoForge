@@ -77,24 +77,15 @@ def delete_blob(url):
 
 
 def scrape_gemini(url):
-    import time
-    from selenium import webdriver
-    from selenium.webdriver.safari.options import Options
-
-    options = Options()
-    driver = webdriver.Safari(options=options)
-    try:
-        driver.get(url)
-        time.sleep(10)  # 等待 SPA 完整渲染
-
-        text = driver.execute_script("""
-            var scripts = document.querySelectorAll('script, style, nav, header, footer');
-            scripts.forEach(function(el){ el.remove(); });
-            return document.body.innerText;
-        """) or ''
-    finally:
-        driver.quit()
-
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url, wait_until='load', timeout=60000)
+        page.wait_for_timeout(5000)
+        page.evaluate("document.querySelectorAll('script,style,nav,header,footer').forEach(e=>e.remove())")
+        text = page.inner_text('body') or ''
+        browser.close()
     lines = [l for l in text.splitlines() if l.strip()]
     return '\n'.join(lines)
 
