@@ -552,7 +552,7 @@ graph TD
 
 ## 當前狀態
 
-**最後更新：** 2026-04-16
+**最後更新：** 2026-04-17
 **目前進度：** Branch 6.3 完成，正式上線，後續維護與功能迭代中
 
 ### 已完成
@@ -669,7 +669,71 @@ graph TD
 ### 原則
 - **不在 main 上直接開發大功能**，避免正式站壞掉
 - `vercel`（不加 `--prod`）會產生獨立 Preview 網址，可安全測試
-- poll.py 啟動方式：`source /path/to/.venv/bin/activate && python3 pipeline/poll.py &`
+- poll.py 啟動方式：開機後由 launchd 自動啟動，**不需手動執行**（見下方 poll.py 操作指南）
+
+### poll.py 操作指南
+
+#### 執行方式（screen，最可靠）
+
+macOS 26 beta 上 launchd 與 nohup 背景 process 均不穩定，
+**改用 `screen` 維持持久 terminal session**。
+
+**開機後第一次啟動（每次重開機後需要做一次）**
+```bash
+screen -S poll
+cd ~/Documents/EchoForge
+source .venv/bin/activate
+python pipeline/poll.py
+# 看到 "Poll script 啟動" 後，按 Ctrl+A  然後按 D  來 detach（離開但保持跑）
+```
+
+**確認 screen session 在跑**
+```bash
+screen -ls          # 應看到 "poll" session (Detached)
+pgrep -fl poll.py   # 應只看到一個 PID
+```
+
+**重新進入看 log（re-attach）**
+```bash
+screen -r poll      # 進入後按 Ctrl+A D 再次 detach
+```
+
+**改完 poll.py 後重啟**
+```bash
+screen -r poll          # 進入 session
+# 按 Ctrl+C 停止 poll.py
+python pipeline/poll.py # 重新啟動
+# 按 Ctrl+A D detach
+```
+
+**強制終止 screen session**
+```bash
+screen -X -S poll quit
+```
+
+**即時追蹤 log（不進入 screen）**
+```bash
+tail -f ~/Documents/EchoForge/pipeline/poll.log
+```
+
+> **注意：** screen session 在重開機後會消失，需重新執行上方「第一次啟動」步驟。
+> launchd plist（`~/Library/LaunchAgents/com.echoforge.poll.plist`）與
+> `pipeline/start_poll.sh` 保留備用，但在 macOS 26 上不穩定，不作為主要方式。
+
+**手動 reset 卡住的 job（status 卡在 processing）**
+```bash
+cd ~/Documents/EchoForge
+source .venv/bin/activate
+python -c "
+import psycopg, os
+with psycopg.connect(os.environ['DATABASE_URL']) as conn:
+    with conn.cursor() as cur:
+        cur.execute(\"UPDATE jobs SET status='pending', error_message=NULL WHERE id=<JOB_ID>\")
+        conn.commit()
+"
+```
+
+---
 
 ### 2026-04-16 修正與功能
 
@@ -693,7 +757,14 @@ graph TD
 - **文章軟刪除（隱藏功能）**：`posts` 表新增 `hidden BOOLEAN DEFAULT false`，所有前台查詢加 `AND hidden = false`，後台 `admin/posts` 加「隱藏 / 顯示」切換按鈕，`POST /api/admin/posts/[id]/hide` toggle 狀態
 - **Google Analytics 4**：Measurement ID `G-3NEHHM1057`，透過 `next/script` 加入 `layout.tsx`，`strategy="afterInteractive"`
 
+### 2026-04-17 修正
+
+- **校正逐字稿語言 bug**：`mistral:v0.3` 遇到中文輸入會回傳英文，在 `PROOFREAD_PROMPT` 補上「回傳語言必須與輸入逐字稿相同，不得翻譯」
+- **poll.py 背景服務改為 screen**：macOS 26 beta 上 launchd 與 nohup 均不穩定，改用 `screen -S poll` 維持持久 terminal session；詳見 poll.py 操作指南
+- **proofread model 確認**：使用 `mistral:v0.3`（非中國模型、輕量），timeout 300s；generate/translate 維持 `qwen2.5:32b`，timeout 600s
+
 ### 下一步
-- 測試完整音檔流程（正式環境端到端）
+- 測試校正逐字稿（修正語言 bug 後）
+- 新增 admin/settings 模型管理功能（settings table，per-job-type 模型選擇，poll.py 從 DB 讀取）
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）
