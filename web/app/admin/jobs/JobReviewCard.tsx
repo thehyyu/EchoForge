@@ -44,6 +44,7 @@ export default function JobReviewCard({
     if (res.ok) setLibrary(await res.json())
     setLibraryLoaded(true)
   }
+  const [proofreading, setProofreading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -69,6 +70,34 @@ export default function JobReviewCard({
       } catch {
         setGenerating(false)
         setError('無法取得產生結果')
+      }
+    }
+    poll()
+  }
+
+  async function handleProofread() {
+    setProofreading(true)
+    setError('')
+    const res = await fetch(`/api/admin/jobs/${jobId}/proofread`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript: editedTranscript }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setProofreading(false); setError(data.error || '校正失敗'); return }
+
+    const proofJobId = data.proofreadJobId
+    const poll = async (): Promise<void> => {
+      const r = await fetch(`/api/admin/jobs/${proofJobId}/status`)
+      const d = await r.json()
+      if (d.status === 'done') {
+        setEditedTranscript(d.result?.transcript ?? editedTranscript)
+        setProofreading(false)
+      } else if (d.status === 'error') {
+        setError(d.error_message || '校正失敗')
+        setProofreading(false)
+      } else {
+        setTimeout(poll, 3000)
       }
     }
     poll()
@@ -134,7 +163,16 @@ export default function JobReviewCard({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">逐字稿</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium">逐字稿</label>
+          <button
+            onClick={handleProofread}
+            disabled={proofreading || generating}
+            className="text-sm px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50"
+          >
+            {proofreading ? '校正中（Mac mini 處理中...）' : '✦ 校正逐字稿'}
+          </button>
+        </div>
         <textarea
           value={editedTranscript}
           onChange={(e) => setEditedTranscript(e.target.value)}
