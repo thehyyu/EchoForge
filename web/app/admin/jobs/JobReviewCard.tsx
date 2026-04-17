@@ -35,6 +35,15 @@ export default function JobReviewCard({
   const [editedTranscript, setEditedTranscript] = useState(transcript)
   const [promptTemplate, setPromptTemplate] = useState(DEFAULT_PROMPT)
   const [showPrompt, setShowPrompt] = useState(false)
+  const [library, setLibrary] = useState<{ id: number; name: string; content: string }[]>([])
+  const [libraryLoaded, setLibraryLoaded] = useState(false)
+
+  async function loadLibrary() {
+    if (libraryLoaded) return
+    const res = await fetch('/api/admin/prompts')
+    if (res.ok) setLibrary(await res.json())
+    setLibraryLoaded(true)
+  }
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -117,7 +126,7 @@ export default function JobReviewCard({
           {new Date(createdAt).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })} · Job #{jobId}
         </p>
         <button
-          onClick={() => setShowPrompt(!showPrompt)}
+          onClick={() => { setShowPrompt(!showPrompt); if (!showPrompt) loadLibrary() }}
           className="text-sm text-gray-500 hover:text-gray-800"
         >
           {showPrompt ? '隱藏 Prompt' : '調整 Prompt'}
@@ -135,15 +144,29 @@ export default function JobReviewCard({
       </div>
 
       {showPrompt && (
-        <div>
-          <label className="block text-sm font-medium mb-1">Prompt 模板</label>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium">Prompt 模板</label>
+            {library.length > 0 && (
+              <select
+                defaultValue=""
+                onChange={e => { if (e.target.value) setPromptTemplate(e.target.value) }}
+                className="text-sm border rounded p-1"
+              >
+                <option value="" disabled>從 Library 選</option>
+                {library.map(p => (
+                  <option key={p.id} value={p.content}>{p.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
           <textarea
             value={promptTemplate}
             onChange={(e) => setPromptTemplate(e.target.value)}
             rows={12}
             className="w-full border rounded p-3 text-sm font-mono leading-relaxed resize-y"
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400">
             {'{{transcript}}'} 會被替換為上方的逐字稿內容
           </p>
         </div>
