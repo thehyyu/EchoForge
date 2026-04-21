@@ -768,3 +768,4 @@ with psycopg.connect(os.environ['DATABASE_URL']) as conn:
 - 新增 admin/settings 模型管理功能（settings table，per-job-type 模型選擇，poll.py 從 DB 讀取）
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）
+- **STT 獨立入口（待規劃）**：新增 `/stt` 路由，開放給特定 Google 帳號（`ALLOWED_STT_EMAILS`），上傳音檔 → Whisper 轉逐字稿 → 頁面顯示結果 → 自動刪除音檔；逐字稿存放位置待確認（Obsidian / Google Drive / 僅頁面顯示）
