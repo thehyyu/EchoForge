@@ -22,7 +22,7 @@ A bilingual (zh/en) audio content publishing platform. Upload audio files, let t
 
 The pipeline runs on a local machine and polls the database every 30 seconds for new jobs. Vercel and the pipeline never communicate directly — Neon DB is the only bridge. This keeps the local LLM unexposed and prevents Vercel functions from timing out on long inference tasks.
 
-See [ARCHITECTURE.md](../ARCHITECTURE.md) for the full system diagram.
+See [ARCHITECTURE.md](https://github.com/thehyyu/EchoForge/blob/main/ARCHITECTURE.md) for the full system diagram.
 
 ## Environment variables
 
