@@ -14,6 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/prompts" className="text-gray-500 hover:text-gray-900">Prompts</Link>
           <Link href="/admin/dictionary" className="text-gray-500 hover:text-gray-900">Dictionary</Link>
           <Link href="/admin/posts" className="text-gray-500 hover:text-gray-900">Posts</Link>
+          <Link href="/admin/projects" className="text-gray-500 hover:text-gray-900">Projects</Link>
         </nav>
         <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-600 min-w-0">
           <span className="truncate">{session?.user?.email}</span>

@@ -15,6 +15,8 @@ function getAltPath(pathname: string, searchParams: URLSearchParams): { href: st
     if (pathname.startsWith('/en/category/')) return { href: pathname.replace('/en/category/', '/zh/category/'), label: '華文' }
     if (pathname.startsWith('/en/tag/')) return { href: pathname.replace('/en/tag/', '/zh/tag/'), label: '華文' }
     if (pathname === '/en/search') return { href: `/zh/search${qs}`, label: '華文' }
+    if (pathname.startsWith('/en/projects/')) return { href: pathname.replace('/en/projects/', '/zh/projects/'), label: '華文' }
+    if (pathname === '/en/projects') return { href: '/zh/projects', label: '華文' }
     return { href: '/zh', label: '華文' }
   } else {
     if (pathname === '/zh') return { href: '/en', label: 'EN' }
@@ -22,6 +24,8 @@ function getAltPath(pathname: string, searchParams: URLSearchParams): { href: st
     if (pathname.startsWith('/zh/category/')) return { href: pathname.replace('/zh/category/', '/en/category/'), label: 'EN' }
     if (pathname.startsWith('/zh/tag/')) return { href: pathname.replace('/zh/tag/', '/en/tag/'), label: 'EN' }
     if (pathname === '/zh/search') return { href: `/en/search${qs}`, label: 'EN' }
+    if (pathname.startsWith('/zh/projects/')) return { href: pathname.replace('/zh/projects/', '/en/projects/'), label: 'EN' }
+    if (pathname === '/zh/projects') return { href: '/en/projects', label: 'EN' }
     return { href: '/en', label: 'EN' }
   }
 }

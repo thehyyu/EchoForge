@@ -5,6 +5,7 @@ import Script from "next/script";
 import NavRss from "./NavRss";
 import NavLang from "./NavLang";
 import NavSearch from "./NavSearch";
+import NavProjects from "./NavProjects";
 import "./globals.css";
 
 const notoSerifTC = Noto_Serif_TC({
@@ -54,6 +55,7 @@ export default function RootLayout({
             thehyyu
           </Link>
           <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-400">
+            <NavProjects />
             <NavSearch />
             <NavLang />
             <NavRss />
