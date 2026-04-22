@@ -1,15 +1,19 @@
 # Personal Blog — Voice & Conversation to Article Pipeline
 
-**願景：** 一個支援語音輸入與 Gemini 對話擷取的個人部落格。
+**願景：** 一個支援語音輸入與 Gemini 對話擷取的個人部落格，同時作為技術技能展示櫥窗與作品集。
 透過兩條輸入管道生成草稿，人工校稿後發佈中英雙語版本。
 AI 處理完全在本地 Mac mini 執行（Qwen2.5），前台部署於 Vercel。
 
 ---
 
-## 四大分類
+## 文章分類（Blog）
 - `work` 工作 / `technology` 科技 / `life` 生活 / `sadhaka` 修行
 
 分類由 AI 自動判斷。文字雲從文章內容萃取關鍵字作為彈性標籤。
+
+## 專案展示（Projects）
+獨立的 `/projects` 路由，以卡片式展示個人開發的工具與專案。
+資料以各專案 repo 內的 `project.yml` 為來源，透過本地 `publish.py` 手動觸發寫入 DB。
 
 ---
 
@@ -57,6 +61,7 @@ graph TD
     B3 --> B6[Branch 6 收尾上線]
     B4 --> B6
     B5 --> B6
+    B6 --> B7[Branch 7 Projects Showcase]
 ```
 
 ### Branch 5 內部依賴（最複雜）
@@ -539,6 +544,187 @@ graph TD
 
 ---
 
+## Branch 7：Projects Showcase（作品集展示）
+
+> 為 blog 新增獨立的 `/projects` 路由，展示個人開發的工具與專案。
+> 資料源為各專案 repo 根目錄的 `project.yml`，
+> 透過本地 `publish.py` 手動觸發寫入 Neon DB，不依賴 CI/CD 自動觸發。
+
+**Input:** Branch 6.3 已上線
+**Output:** 公開作品集頁、Admin 管理頁、本地發布腳本
+
+---
+
+### project.yml 規格
+
+各個專案 repo 根目錄放置 `project.yml`，格式如下：
+
+```yaml
+slug: silverflow                         # URL 識別碼，全小寫英數 + 連字號
+title_zh: SilverFlow
+title_en: SilverFlow
+tagline_zh: 以 DuckDB + dbt 實作 Medallion 架構的 Data Engineering 作品集
+tagline_en: Data Engineering portfolio with DuckDB + dbt Medallion architecture
+tech_stack: [DuckDB, dbt, Python, Datasette]
+github_url: https://github.com/thehyyu/silverflow
+demo_url:                                # 可留空
+status: active                           # active / completed / archived
+started_at: 2025-01                      # YYYY-MM 格式
+```
+
+- `description_zh` / `description_en` 自動從 `README.md` 讀取，不在 yml 內填寫
+- `thumbnail_url` 日後有需要再擴充
+
+---
+
+### 7.1 projects 資料表 Migration
+
+**Input:** Neon DB 連線正常
+**Output:** `projects` 資料表
+
+```sql
+CREATE TABLE projects (
+  id            SERIAL PRIMARY KEY,
+  slug          TEXT UNIQUE NOT NULL,
+  title_zh      TEXT NOT NULL,
+  title_en      TEXT NOT NULL,
+  tagline_zh    TEXT,
+  tagline_en    TEXT,
+  description_zh TEXT,
+  description_en TEXT,
+  tech_stack    TEXT[] DEFAULT '{}',
+  github_url    TEXT,
+  demo_url      TEXT,
+  thumbnail_url TEXT,
+  status        TEXT NOT NULL DEFAULT 'active'
+                  CHECK (status IN ('active', 'completed', 'archived')),
+  started_at    DATE,
+  published_at  TIMESTAMPTZ DEFAULT now(),
+  hidden        BOOLEAN DEFAULT false,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**Success criteria:**
+- [ ] [GREEN] Migration 執行後所有欄位存在且型別正確
+- [ ] Migration 可重複執行不報錯（冪等性，使用 `CREATE TABLE IF NOT EXISTS`）
+- [ ] `status` constraint 只接受 `active / completed / archived`
+
+---
+
+### 7.2 本地發布腳本（publish.py）
+
+**位置：** `EchoForge/scripts/publish_project.py`
+
+**觸發方式：**
+```bash
+# 在 EchoForge 目錄下
+source .venv/bin/activate
+python scripts/publish_project.py /path/to/project-repo
+```
+
+**執行邏輯：**
+1. 讀取 `/path/to/project-repo/project.yml`
+2. 讀取 `/path/to/project-repo/README.md`（存為 `description_zh`，英文版若有 `README.en.md` 則讀取，否則 NULL）
+3. Upsert 進 `projects` 表（以 `slug` 為唯一鍵，重複執行會更新）
+4. 印出確認訊息：`✓ Published: {slug} → https://thehyyu-blog.vercel.app/zh/projects/{slug}`
+
+**Input:** 專案目錄路徑（可為絕對或相對路徑）
+**Output:** Neon DB `projects` 表新增或更新一筆記錄
+
+**Success criteria:**
+- [ ] [GREEN] 給定合法 `project.yml`，成功 upsert 進 DB
+- [ ] [GREEN] 重複執行同一專案，只更新不新增（`ON CONFLICT (slug) DO UPDATE`）
+- [ ] `project.yml` 缺少必填欄位（slug / title_zh / title_en）時，印出明確錯誤並結束，不寫 DB
+- [ ] `started_at` 接受 `YYYY-MM` 格式，轉成 `YYYY-MM-01` 存入 DATE 欄位
+- [ ] `README.md` 不存在時，`description_zh` 存為 NULL，不報錯
+- [ ] [REFACTOR] 讀取 yml、讀取 README、寫入 DB 三個步驟各為獨立函式
+
+---
+
+### 7.3 公開前台 — `/zh/projects` 與 `/en/projects`
+
+**Input:** `projects` 資料表有資料
+**Output:** 卡片式列表頁（中英各一）
+
+**卡片顯示欄位：**
+- 專案名稱（title）
+- 一句話介紹（tagline）
+- 技術標籤（tech_stack，badge 樣式）
+- 狀態標籤（status：`進行中 / 已完成 / 封存`）
+- GitHub 連結、Demo 連結（若有）
+- 開始時間（started_at，格式 `YYYY.MM`）
+
+**Success criteria:**
+- [ ] [GREEN] `/zh/projects` 顯示所有 `hidden=false` 的專案卡片
+- [ ] [GREEN] `/en/projects` 顯示英文版（title_en / tagline_en）
+- [ ] `hidden=true` 的專案不顯示於前台
+- [ ] 按 `published_at DESC` 排序（最新發布的在最前）
+- [ ] tech_stack badge 樣式與現有標籤風格一致（border-only，rounded-full）
+- [ ] [REFACTOR] 確認中英頁面共用同一個卡片元件，不重複
+
+---
+
+### 7.4 專案詳細頁 — `/zh/projects/[slug]`
+
+**Input:** `projects` 資料表、Markdown 內文
+**Output:** 個別專案詳細頁，渲染 description Markdown
+
+**Success criteria:**
+- [ ] [GREEN] `/zh/projects/[slug]` 正確渲染 `description_zh`（Markdown）
+- [ ] [GREEN] `/en/projects/[slug]` 正確渲染 `description_en`
+- [ ] `description` 為 NULL 時，顯示「暫無說明」提示，不報錯
+- [ ] SEO `generateMetadata` 產生 title / description
+- [ ] 不存在的 slug 回傳 404（`notFound()`）
+- [ ] 頁面頂部顯示：GitHub 連結、Demo 連結（若有）、tech_stack、status、started_at
+
+---
+
+### 7.5 Navbar 整合
+
+**Input:** 現有 Navbar 元件
+**Output:** Navbar 加入「Projects」入口
+
+**Success criteria:**
+- [ ] [GREEN] `/zh` Navbar 顯示「專案」連結，指向 `/zh/projects`
+- [ ] [GREEN] `/en` Navbar 顯示「Projects」連結，指向 `/en/projects`
+- [ ] 語言切換時，`/zh/projects` ↔ `/en/projects` 正確互切
+- [ ] [REFACTOR] 確認只修改 Navbar 相關元件，不影響其他路由
+
+---
+
+### 7.6 Admin 管理頁（唯讀檢視）
+
+> 這裡只需要「看得到列表與狀態」即可。
+> 新增/編輯由 `publish.py` 負責，Admin 不需要編輯功能（避免雙寫衝突）。
+
+**Input:** `projects` 資料表
+**Output:** `/admin/projects` 頁面
+
+**Success criteria:**
+- [ ] [GREEN] 列出所有專案（含 hidden）、顯示 status、published_at
+- [ ] 可切換 `hidden` 狀態（hidden toggle，與文章後台邏輯相同）
+- [ ] Admin 導覽列加入「Projects」入口
+
+---
+
+### Branch 7 內部依賴
+
+```mermaid
+graph TD
+    71[7.1 DB Migration] --> 72[7.2 publish.py]
+    71 --> 73[7.3 前台列表頁]
+    71 --> 74[7.4 前台詳細頁]
+    73 --> 75[7.5 Navbar 整合]
+    74 --> 75
+    71 --> 76[7.6 Admin 管理頁]
+```
+
+> 7.2、7.3、7.6 互相獨立，可平行開發；7.5 須等 7.3、7.4 完成。
+
+---
+
 ## Memento Method（外部狀態紀錄）
 
 每次會話結束前，要求 AI 更新以下區塊，記錄當前狀態。
@@ -769,3 +955,4 @@ with psycopg.connect(os.environ['DATABASE_URL']) as conn:
 - 自訂域名（optional）
 - Giscus 留言（需 public repo，目前略過）
 - **STT 獨立入口（待規劃）**：新增 `/stt` 路由，開放給特定 Google 帳號（`ALLOWED_STT_EMAILS`），上傳音檔 → Whisper 轉逐字稿 → 頁面顯示結果 → 自動刪除音檔；逐字稿存放位置待確認（Obsidian / Google Drive / 僅頁面顯示）
+- **Branch 7 Projects Showcase**：`projects` 資料表 migration → `publish.py` local script → 前台卡片列表 + 詳細頁 → Navbar 整合 → Admin 管理頁
