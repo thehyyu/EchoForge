@@ -2,6 +2,7 @@ import { sql } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -83,7 +84,7 @@ export default async function ZhProjectPage({
       </div>
       <article className="prose prose-lg max-w-none">
         {p.description_zh
-          ? <ReactMarkdown>{p.description_zh as string}</ReactMarkdown>
+          ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{p.description_zh as string}</ReactMarkdown>
           : <p className="text-gray-400">暫無說明</p>
         }
       </article>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const CATEGORIES = ['work', 'technology', 'life', 'sadhaka']
 
@@ -127,7 +128,7 @@ export default function PostEditor({
         </label>
         {preview ? (
           <div className="prose prose-sm max-w-none border rounded p-4 min-h-64 bg-white">
-            <ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {currentContent?.replace(/^#[^\n]*\n+/, '') || '（無內容）'}
             </ReactMarkdown>
           </div>

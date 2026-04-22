@@ -2,6 +2,7 @@ import { sql } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -87,7 +88,7 @@ export default async function EnProjectPage({
       </div>
       <article className="prose prose-lg max-w-none">
         {description
-          ? <ReactMarkdown>{description}</ReactMarkdown>
+          ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
           : <p className="text-gray-400">No description yet.</p>
         }
       </article>

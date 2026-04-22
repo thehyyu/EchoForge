@@ -2,6 +2,7 @@ import { sql } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -76,7 +77,7 @@ export default async function PostPage({
         ))}
       </div>
       <article className="prose prose-lg max-w-none">
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       </article>
     </main>
   )
