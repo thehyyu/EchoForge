@@ -1,4 +1,5 @@
 import { auth } from '@/auth'
+import { isAdmin, isSttAllowed } from '@/lib/auth-utils'
 import { NextRequest, NextResponse } from 'next/server'
 
 function detectLang(req: NextRequest): 'zh' | 'en' {
@@ -7,12 +8,30 @@ function detectLang(req: NextRequest): 'zh' | 'en' {
 }
 
 export default auth((req) => {
-  // protect /admin
+  const email = req.auth?.user?.email
+
+  // protect /admin — admin only
   if (req.nextUrl.pathname.startsWith('/admin')) {
     if (!req.auth) {
       const loginUrl = new URL('/api/auth/signin', req.url)
       loginUrl.searchParams.set('callbackUrl', req.url)
       return NextResponse.redirect(loginUrl)
+    }
+    if (!isAdmin(email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return
+  }
+
+  // protect /stt — admin or ALLOWED_STT_EMAILS
+  if (req.nextUrl.pathname === '/stt' || req.nextUrl.pathname.startsWith('/stt/')) {
+    if (!req.auth) {
+      const loginUrl = new URL('/api/auth/signin', req.url)
+      loginUrl.searchParams.set('callbackUrl', req.url)
+      return NextResponse.redirect(loginUrl)
+    }
+    if (!isSttAllowed(email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
     return
   }
@@ -25,5 +44,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/admin/:path*', '/posts/:path*'],
+  matcher: ['/admin/:path*', '/stt', '/stt/:path*', '/posts/:path*'],
 }
